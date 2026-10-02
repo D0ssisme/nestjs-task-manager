@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ ENUM ============
+
+enum TaskPriority {
+  LOW     @map("thap")
+  MEDIUM  @map("trung_binh")
+  HIGH    @map("cao")
+  URGENT  @map("khan_cap")
+
+  @@map("muc_do_uu_tien")
+}
+
+enum TaskStatus {
+  TODO         @map("chua_lam")
+  IN_PROGRESS  @map("dang_lam")
+  DONE         @map("da_xong")
+  ARCHIVED     @map("luu_tru")
+
+  @@map("trang_thai_cong_viec")
+}
+
+enum ReminderChannel {
+  IN_APP  @map("trong_ung_dung")
+  EMAIL   @map("email")
+
+  @@map("kenh_nhac_nho")
+}
+
+enum ReminderStatus {
+  PENDING    @map("cho_gui")
+  SENDING    @map("dang_gui")
+  SENT       @map("da_gui")
+  FAILED     @map("that_bai")
+  CANCELLED  @map("huy")
+
+  @@map("trang_thai_nhac_nho")
+}
+
+// ============ NGƯỜI DÙNG ============
+
+model User {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @map("ma_nguoi_dung") @db.Uuid
+  email        String   @unique @map("email") @db.VarChar(255)
+  passwordHash String   @map("mat_khau_ma_hoa") @db.VarChar(255)
+  fullName     String?  @map("ho_va_ten") @db.VarChar(100)
+  timezone     String   @default("Asia/Ho_Chi_Minh") @map("mui_gio") @db.VarChar(50)
+
+  createdAt    DateTime @default(now()) @map("ngay_tao") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("ngay_cap_nhat") @db.Timestamptz(6)
+
+  categories   Category[]
+  tasks        Task[]
+  tags         Tag[]
+
+  @@map("nguoi_dung")
+}
+
+// ============ DANH MỤC ============
+
+model Category {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @map("ma_danh_muc") @db.Uuid
+  userId    String   @map("ma_nguoi_dung") @db.Uuid
+
+  name      String   @map("ten_danh_muc") @db.VarChar(100)
+  colorHex  String   @default("#3B82F6") @map("ma_mau_hex") @db.VarChar(7)
+  icon      String?  @map("bieu_tuong") @db.VarChar(50)
+
+  createdAt DateTime @default(now()) @map("ngay_tao") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("ngay_cap_nhat") @db.Timestamptz(6)
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  @@unique([userId, name])
+  @@map("danh_muc")
+}
+
+// ============ CÔNG VIỆC ============
+
+model Task {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @map("ma_cong_viec") @db.Uuid
+
+  userId      String       @map("ma_nguoi_dung") @db.Uuid
+  categoryId  String?      @map("ma_danh_muc") @db.Uuid
+  parentId    String?      @map("ma_cong_viec_cha") @db.Uuid
+
+  title       String       @map("tieu_de") @db.VarChar(255)
+  description String?      @map("mo_ta") @db.Text
+
+  status      TaskStatus   @default(TODO) @map("trang_thai")
+  priority    TaskPriority @default(MEDIUM) @map("muc_uu_tien")
+
+  dueAt       DateTime?    @map("han_chot") @db.Timestamptz(6)
+  completedAt DateTime?    @map("thoi_diem_hoan_thanh") @db.Timestamptz(6)
+
+  createdAt   DateTime     @default(now()) @map("ngay_tao") @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @map("ngay_cap_nhat") @db.Timestamptz(6)
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  parent      Task?        @relation("Subtasks", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks    Task[]       @relation("Subtasks")
+
+  taskTags    TaskTag[]
+  reminders   Reminder[]
+
+  @@index([userId, status])
+  @@index([userId, dueAt])
+  @@index([userId, categoryId])
+  @@index([userId, parentId])
+  @@map("cong_viec")
+}
+
+// ============ NHÃN ============
+
+model Tag {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @map("ma_nhan") @db.Uuid
+  userId    String    @map("ma_nguoi_dung") @db.Uuid
+
+  name      String    @map("ten_nhan") @db.VarChar(50)
+  colorHex  String    @default("#6B7280") @map("ma_mau_hex") @db.VarChar(7)
+
+  createdAt DateTime  @default(now()) @map("ngay_tao") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("ngay_cap_nhat") @db.Timestamptz(6)
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskTags  TaskTag[]
+
+  @@unique([userId, name])
+  @@map("nhan")
+}
+
+// ============ CÔNG VIỆC - NHÃN ============
+
+model TaskTag {
+  taskId String @map("ma_cong_viec") @db.Uuid
+  tagId  String @map("ma_nhan") @db.Uuid
+
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, tagId])
+  @@index([tagId])
+  @@map("cong_viec_nhan")
+}
+
+// ============ NHẮC NHỞ ============
+
+model Reminder {
+  id        String          @id @default(dbgenerated("gen_random_uuid()")) @map("ma_nhac_nho") @db.Uuid
+  taskId    String          @map("ma_cong_viec") @db.Uuid
+
+  remindAt  DateTime        @map("thoi_gian_nhac") @db.Timestamptz(6)
+  channel   ReminderChannel @default(IN_APP) @map("kenh")
+  status    ReminderStatus  @default(PENDING) @map("trang_thai")
+
+  attempts  Int             @default(0) @map("so_lan_thu")
+  sentAt    DateTime?       @map("thoi_diem_gui") @db.Timestamptz(6)
+  lastError String?         @map("loi_cuoi") @db.Text
+  jobId     String?         @unique @map("ma_job") @db.VarChar(100)
+
+  createdAt DateTime        @default(now()) @map("ngay_tao") @db.Timestamptz(6)
+  updatedAt DateTime        @updatedAt @map("ngay_cap_nhat") @db.Timestamptz(6)
+
+  task      Task            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, remindAt, channel])
+  @@index([status, remindAt])
+  @@map("nhac_nho")
+}
