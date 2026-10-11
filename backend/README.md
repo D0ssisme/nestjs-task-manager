@@ -57,6 +57,25 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## API cơ bản
+
+Các endpoint CRUD hiện dùng `userId` trong URL để xác định chủ sở hữu resource. Khi bổ sung JWT guard, `userId` nên được lấy từ user đã xác thực thay vì nhận trực tiếp từ URL.
+
+| Method | Endpoint | Mô tả |
+| --- | --- | --- |
+| POST | `/auth/register` | Đăng ký tài khoản |
+| POST | `/auth/login` | Đăng nhập và nhận access token |
+| POST/GET | `/users`, `/users/:id` | Tạo, xem danh sách và xem user |
+| PATCH/DELETE | `/users/:id` | Cập nhật hoặc xóa user |
+| POST/GET | `/categories/user/:userId` | Tạo hoặc liệt kê category |
+| GET/PATCH/DELETE | `/categories/user/:userId/:id` | Xem, sửa hoặc xóa category |
+| POST/GET | `/tags/user/:userId` | Tạo hoặc liệt kê tag |
+| GET/PATCH/DELETE | `/tags/user/:userId/:id` | Xem, sửa hoặc xóa tag |
+| POST/GET | `/tasks/user/:userId` | Tạo hoặc liệt kê task |
+| GET/PATCH/DELETE | `/tasks/user/:userId/:id` | Xem, sửa hoặc xóa task |
+
+Các request body được kiểm tra bởi global `ValidationPipe`; lỗi trả về `statusCode`, `timestamp`, `path` và `message`.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
