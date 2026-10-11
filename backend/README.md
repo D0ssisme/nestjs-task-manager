@@ -47,8 +47,11 @@ $ npm run start:prod
 ## Run tests
 
 ```bash
-# unit tests
+# unit tests hiện có
 $ npm run test
+
+# unit tests provider bằng Jest
+$ npm run test:unit
 
 # e2e tests
 $ npm run test:e2e
@@ -56,6 +59,8 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
+
+GitHub Actions chạy tự động khi push hoặc mở pull request vào `main`/`master`. Workflow cài dependencies, generate Prisma client, chạy migration trên PostgreSQL service, lint, Jest unit test, Supertest e2e test và build.
 
 ## API cơ bản
 
