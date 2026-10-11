@@ -1,4 +1,39 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
-export class TagsService {}
+export class TagsService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  findAll(userId: string) {
+    return this.prisma.tag.findMany({ where: { userId }, orderBy: { name: 'asc' } });
+  }
+
+  async findOne(userId: string, id: string) {
+    const tag = await this.prisma.tag.findFirst({ where: { id, userId } });
+    if (!tag) throw new NotFoundException('Tag not found');
+    return tag;
+  }
+
+  async create(userId: string, data: { name: string; colorHex?: string }) {
+    try {
+      return await this.prisma.tag.create({ data: { userId, ...data } });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new ConflictException('Tag name already exists');
+      }
+      throw error;
+    }
+  }
+
+  async update(userId: string, id: string, data: Prisma.TagUpdateInput) {
+    await this.findOne(userId, id);
+    return this.prisma.tag.update({ where: { id }, data });
+  }
+
+  async remove(userId: string, id: string) {
+    await this.findOne(userId, id);
+    await this.prisma.tag.delete({ where: { id } });
+  }
+}
