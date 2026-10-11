@@ -1,34 +1,41 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateTagDto, UpdateTagDto } from './dto/tag.dto.js';
 import { TagsService } from './tags.service.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface.js';
 
 @Controller('tags')
+@UseGuards(JwtAuthGuard)
+@ApiTags('tags')
+@ApiBearerAuth('access-token')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
-  @Post('user/:userId')
-  create(@Param('userId') userId: string, @Body() dto: CreateTagDto) {
-    return this.tagsService.create(userId, dto);
+  @Post()
+  create(@CurrentUser() user: JwtPayload, @Body() dto: CreateTagDto) {
+    return this.tagsService.create(user.sub, dto);
   }
 
-  @Get('user/:userId')
-  findAll(@Param('userId') userId: string) {
-    return this.tagsService.findAll(userId);
+  @Get()
+  findAll(@CurrentUser() user: JwtPayload) {
+    return this.tagsService.findAll(user.sub);
   }
 
-  @Get('user/:userId/:id')
-  findOne(@Param('userId') userId: string, @Param('id') id: string) {
-    return this.tagsService.findOne(userId, id);
+  @Get(':id')
+  findOne(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.tagsService.findOne(user.sub, id);
   }
 
-  @Patch('user/:userId/:id')
-  update(@Param('userId') userId: string, @Param('id') id: string, @Body() dto: UpdateTagDto) {
-    return this.tagsService.update(userId, id, dto);
+  @Patch(':id')
+  update(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() dto: UpdateTagDto) {
+    return this.tagsService.update(user.sub, id, dto);
   }
 
-  @Delete('user/:userId/:id')
+  @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('userId') userId: string, @Param('id') id: string): Promise<void> {
-    await this.tagsService.remove(userId, id);
+  async remove(@CurrentUser() user: JwtPayload, @Param('id') id: string): Promise<void> {
+    await this.tagsService.remove(user.sub, id);
   }
 }

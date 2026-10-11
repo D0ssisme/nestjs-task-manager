@@ -59,22 +59,25 @@ $ npm run test:cov
 
 ## API cơ bản
 
-Các endpoint CRUD hiện dùng `userId` trong URL để xác định chủ sở hữu resource. Khi bổ sung JWT guard, `userId` nên được lấy từ user đã xác thực thay vì nhận trực tiếp từ URL.
+Các endpoint CRUD yêu cầu Bearer token. Chủ sở hữu resource được lấy từ JWT, không nhận `userId` trực tiếp từ URL.
 
 | Method | Endpoint | Mô tả |
 | --- | --- | --- |
 | POST | `/auth/register` | Đăng ký tài khoản |
 | POST | `/auth/login` | Đăng nhập và nhận access token |
-| POST/GET | `/users`, `/users/:id` | Tạo, xem danh sách và xem user |
-| PATCH/DELETE | `/users/:id` | Cập nhật hoặc xóa user |
-| POST/GET | `/categories/user/:userId` | Tạo hoặc liệt kê category |
-| GET/PATCH/DELETE | `/categories/user/:userId/:id` | Xem, sửa hoặc xóa category |
-| POST/GET | `/tags/user/:userId` | Tạo hoặc liệt kê tag |
-| GET/PATCH/DELETE | `/tags/user/:userId/:id` | Xem, sửa hoặc xóa tag |
-| POST/GET | `/tasks/user/:userId` | Tạo hoặc liệt kê task |
-| GET/PATCH/DELETE | `/tasks/user/:userId/:id` | Xem, sửa hoặc xóa task |
+| GET | `/auth/me` | Lấy thông tin user hiện tại, cần Bearer token |
+| GET | `/users/me` | Xem user hiện tại |
+| PATCH/DELETE | `/users/me` | Cập nhật hoặc xóa user hiện tại |
+| POST/GET | `/categories` | Tạo hoặc liệt kê category của user hiện tại |
+| GET/PATCH/DELETE | `/categories/:id` | Xem, sửa hoặc xóa category của user hiện tại |
+| POST/GET | `/tags` | Tạo hoặc liệt kê tag của user hiện tại |
+| GET/PATCH/DELETE | `/tags/:id` | Xem, sửa hoặc xóa tag của user hiện tại |
+| POST/GET | `/tasks` | Tạo hoặc liệt kê task của user hiện tại |
+| GET/PATCH/DELETE | `/tasks/:id` | Xem, sửa hoặc xóa task của user hiện tại |
 
 Các request body được kiểm tra bởi global `ValidationPipe`; lỗi trả về `statusCode`, `timestamp`, `path` và `message`.
+
+Swagger UI có tại `http://localhost:3001/api` khi backend chạy với port mặc định hiện tại. Dùng nút **Authorize** để nhập `accessToken` theo dạng `Bearer <token>` trước khi gọi các endpoint protected.
 
 ## Deployment
 
