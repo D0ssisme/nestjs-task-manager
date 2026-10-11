@@ -153,12 +153,20 @@ describe('API e2e', () => {
 
     taskId = response.body.id;
 
+    const taggedTask = await http()
+      .post(`/tasks/${taskId}/tags`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ tagId })
+      .expect(201);
+    expect(taggedTask.body.taskTags.some((taskTag: { tagId: string }) => taskTag.tagId === tagId)).toBe(true);
+
     const listResponse = await http()
-      .get('/tasks')
+      .get(`/tasks?priority=HIGH&categoryId=${categoryId}&page=1&limit=10&sortBy=createdAt&order=desc`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
-    expect(listResponse.body.some((task: { id: string }) => task.id === taskId)).toBe(true);
+    expect(listResponse.body.data.some((task: { id: string }) => task.id === taskId)).toBe(true);
+    expect(listResponse.body.meta).toEqual(expect.objectContaining({ page: 1, limit: 10 }));
   });
 
   it('does not expose another user resource and returns 404', async () => {
@@ -185,12 +193,19 @@ describe('API e2e', () => {
       .expect(404);
   });
 
-  it('updates and deletes the task', async () => {
-    await http()
+  it('updates status, sets completedAt, detaches the tag, and deletes the task', async () => {
+    const updateResponse = await http()
       .patch(`/tasks/${taskId}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .send({ status: 'DONE' })
       .expect(200);
+    expect(updateResponse.body.status).toBe('DONE');
+    expect(updateResponse.body.completedAt).toEqual(expect.any(String));
+
+    await http()
+      .delete(`/tasks/${taskId}/tags/${tagId}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(204);
 
     await http()
       .delete(`/tasks/${taskId}`)

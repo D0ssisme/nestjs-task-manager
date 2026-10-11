@@ -79,6 +79,8 @@ Các endpoint CRUD yêu cầu Bearer token. Chủ sở hữu resource được l
 | GET/PATCH/DELETE | `/tags/:id` | Xem, sửa hoặc xóa tag của user hiện tại |
 | POST/GET | `/tasks` | Tạo hoặc liệt kê task của user hiện tại |
 | GET/PATCH/DELETE | `/tasks/:id` | Xem, sửa hoặc xóa task của user hiện tại |
+| POST | `/tasks/:id/tags` | Gắn tag thuộc user hiện tại vào task |
+| DELETE | `/tasks/:id/tags/:tagId` | Bỏ tag khỏi task |
 
 Các request body được kiểm tra bởi global `ValidationPipe`; lỗi trả về `statusCode`, `timestamp`, `path` và `message`.
 

@@ -8,6 +8,7 @@ describe('TasksService', () => {
   let prisma: {
     task: {
       findMany: jest.Mock;
+      count: jest.Mock;
       findFirst: jest.Mock;
       create: jest.Mock;
       update: jest.Mock;
@@ -19,6 +20,7 @@ describe('TasksService', () => {
     prisma = {
       task: {
         findMany: jest.fn(),
+        count: jest.fn().mockResolvedValue(0),
         findFirst: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
@@ -53,6 +55,7 @@ describe('TasksService', () => {
       .resolves.toBe(task);
     expect(prisma.task.create).toHaveBeenCalledWith({
       data: { userId: 'user-1', title: 'Test task' },
+      include: { category: true, taskTags: { include: { tag: true } } },
     });
   });
 });
