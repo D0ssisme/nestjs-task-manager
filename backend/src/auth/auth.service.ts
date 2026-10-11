@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service.js';
 import { LoginDto, RegisterDto } from './dto/auth.dto.js';
+import { JwtPayload } from './interfaces/jwt-payload.interface.js';
 
 @Injectable()
 export class AuthService {
@@ -31,6 +32,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
     return this.createAuthResponse(user);
+  }
+
+  getProfile(payload: JwtPayload) {
+    return this.usersService.findOne(payload.sub);
   }
 
   private async createAuthResponse(user: { id: string; email: string; fullName: string | null; timezone: string }) {

@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
 
@@ -13,6 +14,18 @@ async function bootstrap() {
   }));
   app.useGlobalFilters(new AllExceptionsFilter());
   app.enableCors({ origin: process.env.CORS_ORIGIN?.split(',') ?? false });
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('NestJS Task Manager API')
+    .setDescription('API for authentication and task management')
+    .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'access-token',
+    )
+    .build();
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api', app, swaggerDocument);
 
   await app.listen(process.env.PORT ?? 3000);
 }
