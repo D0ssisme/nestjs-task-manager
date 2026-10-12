@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
+import { RequestTimingInterceptor } from './common/interceptors/request-timing.interceptor.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,6 +14,7 @@ async function bootstrap() {
     transform: true,              // tự ép kiểu theo DTO
   }));
   app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalInterceptors(new RequestTimingInterceptor());
   app.enableCors({ origin: process.env.CORS_ORIGIN?.split(',') ?? false });
 
   const swaggerConfig = new DocumentBuilder()
