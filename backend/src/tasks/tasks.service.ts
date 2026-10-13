@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, TaskStatus } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateTaskDto, ListTasksQueryDto, SortOrder, TaskSortBy, UpdateTaskDto } from './dto/task.dto.js';
 
@@ -97,7 +98,7 @@ export class TasksService {
     try {
       await this.prisma.taskTag.create({ data: { taskId, tagId } });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
         throw new ConflictException('Tag is already attached to this task');
       }
       throw error;
