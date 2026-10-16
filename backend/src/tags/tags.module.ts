@@ -4,7 +4,7 @@ import { TagsService } from './tags.service.js';
 import { PrismaModule } from '../prisma/prisma.module.js';
 
 @Module({
-  imports: [PrismaModule],
+
   controllers: [TagsController],
   providers: [TagsService],
   exports: [TagsService],

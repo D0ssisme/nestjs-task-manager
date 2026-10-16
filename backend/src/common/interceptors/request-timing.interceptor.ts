@@ -5,15 +5,16 @@ import {
   Logger,
   NestInterceptor,
 } from '@nestjs/common';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import { Observable, tap } from 'rxjs';
+import type { RequestWithId } from '../middleware/request-id.middleware.js';
 
 @Injectable()
 export class RequestTimingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(RequestTimingInterceptor.name);
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<RequestWithId>();
     if (this.isDocumentationRequest(request.path)) {
       return next.handle();
     }
@@ -43,7 +44,7 @@ export class RequestTimingInterceptor implements NestInterceptor {
   }
 
   private logRequest(
-    request: Request,
+    request: RequestWithId,
     statusCode: number,
     startedAt: bigint,
     error?: unknown,
@@ -52,6 +53,7 @@ export class RequestTimingInterceptor implements NestInterceptor {
     const entry = {
       method: request.method,
       path: request.originalUrl ?? request.url,
+      requestId: request.requestId,
       statusCode,
       durationMs: Number(durationMs.toFixed(2)),
     };
