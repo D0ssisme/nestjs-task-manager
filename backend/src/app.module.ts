@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -12,6 +12,7 @@ import { TagsModule } from './tags/tags.module.js';
 import { RemindersModule } from './reminders/reminders.module.js';
 import { MailModule } from './mail/mail.module.js';
 import { HealthModule } from './health/health.module.js';
+import { RequestIdMiddleware } from './common/middleware/request-id.middleware.js';
 
 @Module({
   imports: [
@@ -22,4 +23,10 @@ import { HealthModule } from './health/health.module.js';
     CategoriesModule, TagsModule, RemindersModule, MailModule, HealthModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer
+      .apply(RequestIdMiddleware)
+      .forRoutes('*');
+  }
+}
