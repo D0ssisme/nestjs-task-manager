@@ -1,4 +1,4 @@
-import type { AuthResponse, Category, Task, TaskListResponse, TaskPriority, TaskStatus, User } from './types';
+import type { AuthResponse, Category, Reminder, Task, TaskListResponse, TaskPriority, TaskStatus, User } from './types';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 const TOKEN_KEY = 'task_manager_access_token';
@@ -44,4 +44,5 @@ export const api = {
     request<Task>(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   deleteTask: (id: string) => request<void>(`/tasks/${id}`, { method: 'DELETE' }),
   listCategories: () => request<Category[]>('/categories'),
+  listReminders: () => request<Reminder[]>('/reminders'),
 };

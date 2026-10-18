@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { api, tokenStore } from './api';
-import type { Category, Task, TaskPriority, TaskStatus, User } from './types';
+import type { Category, Reminder, Task, TaskPriority, TaskStatus, User } from './types';
 
 const statusLabels: Record<TaskStatus, string> = {
   TODO: 'Chưa làm',
@@ -85,6 +85,8 @@ function Dashboard({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [priority, setPriority] = useState<TaskPriority | ''>('');
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [showReminders, setShowReminders] = useState(false);
 
   async function loadTasks() {
     try {
@@ -98,6 +100,12 @@ function Dashboard({ user, onLogout }: { user: User; onLogout: () => void }) {
   }
   useEffect(() => { void loadTasks(); }, [page, status, priority]);
   useEffect(() => { api.listCategories().then(setCategories).catch(() => undefined); }, []);
+  useEffect(() => {
+    const loadReminders = () => { api.listReminders().then(setReminders).catch(() => undefined); };
+    loadReminders();
+    const interval = window.setInterval(loadReminders, 60_000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   async function changeStatus(task: Task, nextStatus: TaskStatus) {
     try { await api.updateTask(task.id, { status: nextStatus }); await loadTasks(); }
@@ -113,7 +121,13 @@ function Dashboard({ user, onLogout }: { user: User; onLogout: () => void }) {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand"><span className="brand-mark small">TM</span><strong>Task Manager</strong></div>
-        <div className="profile"><span className="avatar">{(user.fullName ?? user.email)[0].toUpperCase()}</span><span>{user.fullName ?? user.email}</span><button className="ghost-button" onClick={onLogout}>Đăng xuất</button></div>
+        <div className="profile">
+          <div className="notification-wrap">
+            <button className="notification-button" aria-label="Thông báo" onClick={() => setShowReminders(!showReminders)}>🔔{reminders.length > 0 && <span className="notification-count">{reminders.length}</span>}</button>
+            {showReminders && <div className="notification-panel"><strong>Thông báo</strong>{reminders.length === 0 ? <p className="muted">Không có task sắp đến hạn.</p> : reminders.map((reminder) => <div className="notification-item" key={reminder.id}><strong>{reminder.kind === 'overdue' ? 'Đã quá hạn' : 'Sắp đến hạn'}</strong><span>{reminder.title}</span><small>{new Date(reminder.dueAt).toLocaleString('vi-VN')}</small></div>)}</div>}
+          </div>
+          <span className="avatar">{(user.fullName ?? user.email)[0].toUpperCase()}</span><span>{user.fullName ?? user.email}</span><button className="ghost-button" onClick={onLogout}>Đăng xuất</button>
+        </div>
       </header>
       <main className="content">
         <div className="page-heading"><div><p className="eyebrow">MY WORKSPACE</p><h1>Công việc của tôi</h1><p className="muted">Tập trung vào điều quan trọng nhất hôm nay.</p></div><button className="primary-button" onClick={() => setShowForm(!showForm)}>＋ Tạo task</button></div>

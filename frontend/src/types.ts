@@ -39,3 +39,11 @@ export interface TaskListResponse {
     totalPages: number;
   };
 }
+
+export interface Reminder {
+  id: string;
+  title: string;
+  dueAt: string;
+  priority: TaskPriority;
+  kind: 'overdue' | 'upcoming';
+}

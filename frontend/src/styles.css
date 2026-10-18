@@ -29,6 +29,15 @@ textarea { min-height: 80px; resize: vertical; }
 .brand, .profile, .task-main, .task-meta, .toolbar, .form-row, .pagination { display: flex; align-items: center; }
 .brand, .profile { gap: 11px; }
 .profile { color: #475467; font-size: 13px; }
+.notification-wrap { position: relative; }
+.notification-button { position: relative; border: 0; padding: 7px; background: transparent; font-size: 18px; }
+.notification-count { position: absolute; top: 0; right: 0; min-width: 16px; padding: 2px 4px; border-radius: 999px; color: #fff; background: #d92d20; font-size: 10px; font-weight: 800; line-height: 1; }
+.notification-panel { position: absolute; z-index: 5; top: 42px; right: 0; width: 290px; padding: 14px; border: 1px solid #e5e9f0; border-radius: 12px; background: #fff; box-shadow: 0 12px 32px #17203318; }
+.notification-panel > strong { display: block; margin-bottom: 10px; }
+.notification-panel p { margin: 0; font-size: 12px; }
+.notification-item { display: grid; gap: 3px; padding: 10px 0; border-top: 1px solid #edf0f4; font-size: 12px; }
+.notification-item strong { color: #b54708; font-size: 11px; }
+.notification-item small { color: #98a2b3; }
 .avatar { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: #3867e8; background: #e8efff; font-weight: 800; }
 .ghost-button, .icon-button { border: 0; color: #667085; background: transparent; }
 .content { width: min(100% - 40px, 1020px); margin: 0 auto; padding: 54px 0 80px; }
