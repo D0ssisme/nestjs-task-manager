@@ -20,7 +20,11 @@ export class CategoriesService {
     try {
       return await this.prisma.category.create({ data: { userId, ...data } });
     } catch (error) {
+<<<<<<< HEAD
       if (this.isUniqueConstraintError(error)) {
+=======
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+>>>>>>> cb82f4c50264025683bdda103bc293e1f8baf724
         throw new ConflictException('Category name already exists');
       }
       throw error;
