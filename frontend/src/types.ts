@@ -17,6 +17,18 @@ export interface Category {
   id: string;
   name: string;
   colorHex: string;
+  icon: string | null;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  colorHex: string;
+}
+
+export interface TaskTag {
+  tagId: string;
+  tag: Tag;
 }
 
 export interface Task {
@@ -27,7 +39,13 @@ export interface Task {
   priority: TaskPriority;
   dueAt: string | null;
   completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  categoryId: string | null;
+  parentId: string | null;
   category: Category | null;
+  taskTags: TaskTag[];
 }
 
 export interface TaskListResponse {
