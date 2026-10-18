@@ -1,750 +1,330 @@
 # NestJS Task Manager
 
-Backend service cho **hệ thống quản lý task cá nhân**, được xây dựng bằng **NestJS + TypeScript**.
+Ứng dụng quản lý công việc cá nhân gồm:
 
-Project được phát triển với mục tiêu tìm hiểu và áp dụng các cơ chế quan trọng của NestJS như:
+- Backend NestJS + TypeScript.
+- Frontend React + Vite + TypeScript.
+- PostgreSQL chạy bằng Docker Compose.
+- Prisma ORM và migration.
+- JWT authentication.
+- Swagger/OpenAPI.
+- Thông báo task quá hạn hoặc sắp đến hạn ngay trên web.
 
-* Module
-* Controller
-* Provider / Dependency Injection
-* DTO và ValidationPipe
-* Guard và Authentication
-* Exception Filter
-* Interceptor
-* Configuration Management
-* ORM với Prisma
-* PostgreSQL
-* Background Job / Reminder
-* Email Notification
-* Testing
-* Docker
-* API Documentation với Swagger
-* CI với GitHub Actions
-
----
-
-## 1. Mục tiêu
-
-Project mô phỏng một hệ thống quản lý công việc cá nhân, cho phép người dùng:
-
-* Đăng ký và đăng nhập
-* Quản lý công việc
-* Phân loại công việc
-* Gắn nhãn cho công việc
-* Theo dõi trạng thái và mức độ ưu tiên
-* Thiết lập thời hạn
-* Thiết lập nhắc nhở
-* Gửi thông báo email khi đến thời gian nhắc nhở
-
-Phần nghiệp vụ được giữ ở mức đơn giản để tập trung vào việc nghiên cứu kiến trúc và các cơ chế của NestJS.
-
----
-
-## 2. Công nghệ sử dụng
+## Công nghệ
 
 ### Backend
 
-| Công nghệ         | Vai trò                                      |
-| ----------------- | -------------------------------------------- |
-| NestJS            | Framework backend chính                      |
-| TypeScript        | Ngôn ngữ lập trình                           |
-| Node.js           | Runtime                                      |
-| Prisma            | ORM / Database Access Layer                  |
-| PostgreSQL        | Cơ sở dữ liệu                                |
-| Passport + JWT    | Authentication                               |
-| class-validator   | Validation DTO                               |
-| class-transformer | Transform dữ liệu request                    |
-| Joi               | Validate biến môi trường                     |
-| bcrypt            | Mã hóa mật khẩu                              |
-| Nodemailer        | Gửi email                                    |
-| Mailpit           | SMTP server dùng trong môi trường phát triển |
+- NestJS 12, TypeScript, Node.js.
+- Prisma 6 và PostgreSQL 16.
+- Passport JWT, bcrypt.
+- `class-validator`, `class-transformer`, Joi.
+- Swagger với `@nestjs/swagger`.
+- Jest cho provider unit test.
+- Vitest + Supertest cho e2e test.
+- Oxlint.
 
-### NestJS modules / mechanisms
+### Frontend
 
-* `@nestjs/config`
-* `@nestjs/jwt`
-* `@nestjs/passport`
-* `@nestjs/schedule`
-* `@nestjs/throttler`
-* `@nestjs/swagger`
-* `@nestjs/terminus`
+- React 19.
+- Vite 7.
+- TypeScript.
+- Fetch API.
 
-### Development / Infrastructure
+### Hạ tầng
 
-* Docker
-* Docker Compose
-* Git
-* GitHub
-* Vitest
-* GitHub Actions
+- Docker Compose.
+- GitHub Actions CI cho backend.
+- Mailpit chỉ được cấu hình như dependency SMTP local; thông báo hiện tại của ứng dụng là in-app trên frontend.
 
----
-
-## 3. Kiến trúc tổng quan
-
-Request từ client được xử lý theo flow:
-
-```text
-Client
-  │
-  ▼
-Controller
-  │
-  ▼
-Service / Provider
-  │
-  ▼
-PrismaService
-  │
-  ▼
-PostgreSQL
-```
-
-Một số request có thêm các tầng xử lý của NestJS:
-
-```text
-HTTP Request
-     │
-     ▼
-   Guard
-     │
-     ▼
- ValidationPipe
-     │
-     ▼
- Controller
-     │
-     ▼
- Service
-     │
-     ▼
- Prisma
-     │
-     ▼
- PostgreSQL
-     │
-     ▼
- Exception Filter
-     │
-     ▼
-HTTP Response
-```
-
-Các cơ chế này giúp tách biệt trách nhiệm giữa routing, validation, authentication, business logic và truy cập dữ liệu.
-
----
-
-## 4. Cấu trúc project
+## Cấu trúc
 
 ```text
 nestjs-task-manager/
-│
 ├── backend/
-│   │
 │   ├── prisma/
 │   │   ├── schema.prisma
 │   │   └── migrations/
-│   │
 │   ├── src/
-│   │   ├── main.ts
-│   │   ├── app.module.ts
-│   │   │
-│   │   ├── config/
-│   │   │   └── env.validation.ts
-│   │   │
-│   │   ├── common/
-│   │   │   ├── decorators/
-│   │   │   ├── filters/
-│   │   │   └── interceptors/
-│   │   │
-│   │   ├── prisma/
-│   │   │   ├── prisma.module.ts
-│   │   │   └── prisma.service.ts
-│   │   │
 │   │   ├── auth/
-│   │   ├── users/
-│   │   ├── tasks/
 │   │   ├── categories/
-│   │   ├── tags/
-│   │   ├── reminders/
+│   │   ├── common/
+│   │   ├── health/
 │   │   ├── mail/
-│   │   └── health/
-│   │
+│   │   ├── reminders/
+│   │   ├── tags/
+│   │   ├── tasks/
+│   │   ├── users/
+│   │   ├── app.module.ts
+│   │   └── main.ts
 │   ├── test/
-│   │
 │   ├── .env.example
 │   ├── docker-compose.yml
-│   ├── Dockerfile
-│   ├── package.json
-│   └── README.md
-│
-└── README.md
+│   └── package.json
+├── frontend/
+│   ├── src/
+│   ├── .env.example
+│   └── package.json
+└── .github/workflows/ci.yml
 ```
 
----
+## Cấu hình môi trường
 
-## 5. Các module chính
+### Backend
 
-### AuthModule
-
-Phụ trách authentication:
-
-* Đăng ký tài khoản
-* Đăng nhập
-* Hash mật khẩu bằng bcrypt
-* Xác thực JWT
-* Bảo vệ các API yêu cầu đăng nhập
-
-Flow cơ bản:
-
-```text
-Login
-  │
-  ▼
-AuthController
-  │
-  ▼
-AuthService
-  │
-  ├── Verify password
-  │
-  └── Generate JWT
-          │
-          ▼
-        Client
-```
-
----
-
-### TasksModule
-
-Module chính của hệ thống.
-
-Cung cấp các chức năng:
-
-* Tạo task
-* Xem task
-* Cập nhật task
-* Xóa task
-* Thay đổi trạng thái
-* Thay đổi mức độ ưu tiên
-* Thiết lập deadline
-* Quản lý task cha / task con
-
-Flow:
-
-```text
-TasksController
-      │
-      ▼
-TasksService
-      │
-      ▼
-PrismaService
-      │
-      ▼
-PostgreSQL
-```
-
----
-
-### CategoriesModule
-
-Quản lý danh mục công việc.
-
-Ví dụ:
-
-```text
-Học tập
-Cá nhân
-Công việc
-Dự án
-```
-
-Mỗi người dùng có thể tạo và quản lý danh mục riêng.
-
----
-
-### TagsModule
-
-Quản lý nhãn của task.
-
-Một task có thể có nhiều tag và một tag có thể được sử dụng cho nhiều task.
-
-Quan hệ:
-
-```text
-Task ───< TaskTag >─── Tag
-```
-
----
-
-### RemindersModule
-
-Quản lý thời gian nhắc nhở cho task.
-
-Reminder có thể có các trạng thái:
-
-```text
-cho_gui
-dang_gui
-da_gui
-that_bai
-huy
-```
-
-Thông tin retry được lưu để hỗ trợ xử lý lỗi khi gửi thông báo.
-
----
-
-### MailModule
-
-Đóng gói chức năng gửi email.
-
-Kiến trúc dự kiến:
-
-```text
-ReminderService
-      │
-      ▼
-Reminder Processor
-      │
-      ▼
-MailService
-      │
-      ▼
-SMTP
-      │
-      ▼
-Mail Provider
-```
-
-Trong môi trường development, project sử dụng **Mailpit** để kiểm tra email mà không cần gửi email thật.
-
----
-
-### HealthModule
-
-Cung cấp health check cho backend và các dependency quan trọng.
-
----
-
-## 6. Database
-
-Project sử dụng:
-
-```text
-PostgreSQL
-    ▲
-    │
-Prisma ORM
-    ▲
-    │
-NestJS
-```
-
-Các bảng chính:
-
-```text
-nguoi_dung
-danh_muc
-cong_viec
-nhan
-cong_viec_nhan
-nhac_nho
-```
-
-Quan hệ chính:
-
-```text
-NguoiDung
- ├── DanhMuc
- ├── CongViec
- └── Nhan
-
-CongViec
- ├── DanhMuc
- ├── CongViecCha
- ├── Nhan
- └── NhacNho
-```
-
----
-
-## 7. Environment Variables
-
-Không commit file `.env` chứa thông tin thật.
-
-Tạo file:
-
-```text
-.env
-```
-
-dựa trên:
-
-```text
-.env.example
-```
-
-Ví dụ:
+Tạo file `backend/.env` từ `backend/.env.example`:
 
 ```env
-DATABASE_URL="postgresql://app:app@localhost:5432/taskdb"
-
-JWT_SECRET=change-me
+DATABASE_URL="postgresql://app:app@localhost:5432/taskdb?schema=public"
+JWT_SECRET=change-me-to-a-secret-with-at-least-8-characters
 JWT_EXPIRES_IN=15m
-
-PORT=3000
+PORT=3001
 
 MAIL_PROVIDER=smtp
 SMTP_HOST=localhost
 SMTP_PORT=1025
 SMTP_USER=
 SMTP_PASS=
-
 MAIL_FROM="Task App <no-reply@taskapp.local>"
 ```
 
----
+`JWT_SECRET` phải có ít nhất 8 ký tự. Không commit `backend/.env`.
 
-## 8. Chạy project
+### Frontend
 
-### Yêu cầu
+Tạo file `frontend/.env` từ `frontend/.env.example`:
 
-* Node.js
-* npm
-* Docker Desktop
-* Docker Compose
-
-### Cài đặt dependencies
-
-```bash
-cd backend
-npm install
+```env
+VITE_API_URL=http://localhost:3001
 ```
 
-### Khởi động PostgreSQL và Mailpit
+Sau khi thay đổi biến `VITE_*`, cần khởi động lại Vite.
 
-```bash
+## Chạy local
+
+### 1. Khởi động PostgreSQL và Mailpit
+
+```powershell
+cd C:\nestjs-task-manager\backend
 docker compose up -d
-```
-
-Kiểm tra:
-
-```bash
 docker compose ps
 ```
 
-### Generate Prisma Client
+PostgreSQL chạy ở `localhost:5432`. Mailpit có:
 
-```bash
+- SMTP: `localhost:1025`
+- Web UI: `http://localhost:8025`
+
+### 2. Cài backend và đồng bộ database
+
+```powershell
+cd C:\nestjs-task-manager\backend
+npm install
 npx prisma generate
+npx prisma migrate deploy
 ```
 
-### Kiểm tra database schema
+### 3. Chạy backend
 
-```bash
-npx prisma validate
-```
-
-### Chạy migration
-
-```bash
-npx prisma migrate dev
-```
-
-### Chạy development server
-
-```bash
+```powershell
+cd C:\nestjs-task-manager\backend
 npm run start:dev
 ```
 
 Backend mặc định chạy tại:
 
 ```text
-http://localhost:3000
+http://localhost:3001
 ```
 
----
-
-## 9. Mailpit
-
-Mailpit được sử dụng để kiểm tra email trong môi trường development.
-
-SMTP:
+Swagger UI:
 
 ```text
-localhost:1025
+http://localhost:3001/api
 ```
 
-Web interface:
+OpenAPI JSON:
 
 ```text
-http://localhost:8025
+http://localhost:3001/api-json
 ```
 
-Email được gửi bởi ứng dụng sẽ xuất hiện trong Mailpit thay vì gửi tới email thật.
+### 4. Chạy frontend
 
----
+Mở terminal khác:
 
-## 10. API Documentation
+```powershell
+cd C:\nestjs-task-manager\frontend
+npm install
+npm run dev
+```
 
-Project sử dụng **OpenAPI / Swagger** để mô tả API.
-
-Swagger UI dự kiến:
+Frontend chạy tại:
 
 ```text
-http://localhost:3000/api
+http://localhost:5173
 ```
 
-API documentation mô tả:
+## Database
 
-* Endpoint
-* HTTP method
-* Request parameters
-* Request body
-* Response
-* Authentication
-* Error response
+Xem dữ liệu bằng Prisma Studio:
 
----
-
-## 11. Validation
-
-Project sử dụng DTO kết hợp với `ValidationPipe`.
-
-Các validation rule được định nghĩa trong DTO thay vì xử lý trực tiếp trong controller.
-
-Global validation:
-
-```typescript
-new ValidationPipe({
-  whitelist: true,
-  forbidNonWhitelisted: true,
-  transform: true,
-})
+```powershell
+cd C:\nestjs-task-manager\backend
+npx prisma studio
 ```
 
-Điều này giúp:
+Mở `http://localhost:5555`.
 
-* Loại bỏ property không được khai báo
-* Phát hiện request chứa field không hợp lệ
-* Transform dữ liệu request
-* Chuẩn hóa validation giữa các API
+Các model chính:
 
----
+- `User`
+- `Task`
+- `Category`
+- `Tag`
+- `TaskTag`
+- `Reminder`
 
-## 12. Error Handling
+Các lệnh Prisma:
 
-Project sử dụng global exception filter để chuẩn hóa error response.
-
-Ví dụ:
-
-```json
-{
-  "statusCode": 400,
-  "message": "Bad Request",
-  "path": "/tasks",
-  "timestamp": "2026-10-02T12:00:00.000Z"
-}
+```powershell
+npx prisma validate
+npx prisma generate
+npx prisma migrate deploy
+npx prisma studio
 ```
 
-Mục tiêu là giúp API có format lỗi thống nhất và dễ debug.
+Trong quá trình phát triển schema, dùng:
 
----
+```powershell
+npx prisma migrate dev --name describe-your-change
+```
 
-## 13. Authentication
+## API chính
 
-Authentication sử dụng:
+Tất cả route bên dưới, trừ register/login, yêu cầu:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+| Method | Endpoint | Mô tả |
+| --- | --- | --- |
+| POST | `/auth/register` | Đăng ký |
+| POST | `/auth/login` | Đăng nhập và nhận JWT |
+| GET | `/auth/me` | Lấy user hiện tại |
+| GET/PATCH/DELETE | `/users/me` | Quản lý profile |
+| GET/POST | `/categories` | Liệt kê/tạo category |
+| GET/PATCH/DELETE | `/categories/:id` | Xem/sửa/xóa category |
+| GET/POST | `/tags` | Liệt kê/tạo tag |
+| GET/PATCH/DELETE | `/tags/:id` | Xem/sửa/xóa tag |
+| GET/POST | `/tasks` | Liệt kê/tạo task |
+| GET/PATCH/DELETE | `/tasks/:id` | Xem/sửa/xóa task |
+| POST | `/tasks/:id/tags` | Gắn tag vào task |
+| DELETE | `/tasks/:id/tags/:tagId` | Bỏ tag khỏi task |
+| GET | `/reminders` | Task quá hạn/sắp hạn trong 24 giờ |
+
+`GET /tasks` hỗ trợ:
 
 ```text
-JWT
-+
-Passport
-+
-bcrypt
+status=TODO|IN_PROGRESS|DONE|ARCHIVED
+priority=LOW|MEDIUM|HIGH|URGENT
+categoryId=<uuid>
+page=1
+limit=20
+sortBy=createdAt|dueAt
+order=asc|desc
 ```
 
-Flow:
+Khi task chuyển sang `DONE`, backend tự set `completedAt`. Khi chuyển khỏi `DONE`, `completedAt` được reset.
+
+## Request lifecycle
+
+Ví dụ với `GET /tasks`:
 
 ```text
-Register
-   │
-   ▼
-Hash password
-   │
-   ▼
-PostgreSQL
-
-
-Login
-   │
-   ▼
-Verify password
-   │
-   ▼
-Generate JWT
-   │
-   ▼
-Client
+HTTP request
+  → request-id middleware
+  → JwtAuthGuard
+  → RequestTimingInterceptor (before)
+  → ValidationPipe
+  → TasksController
+  → TasksService
+  → PrismaService → PostgreSQL
+  → RequestTimingInterceptor (after)
+  → JSON response
 ```
 
-Các API cần xác thực sẽ sử dụng Guard để kiểm tra JWT.
+Nếu có lỗi ở các bước xử lý:
 
----
+```text
+Exception
+  → AllExceptionsFilter
+  → structured JSON error response
+```
 
-## 14. Rate Limiting
+Project hiện có:
 
-Project sử dụng `@nestjs/throttler` để giới hạn số request trong một khoảng thời gian.
+- Global `ValidationPipe`.
+- JWT `Guard`.
+- Request ID middleware.
+- Request timing custom interceptor.
+- Global exception filter.
+- `@CurrentUser()` custom decorator.
+- Global `ConfigModule`.
+- Prisma ORM và migration.
 
-Mục đích:
+## Kiểm thử và chất lượng code
 
-* Giảm request bất thường
-* Hạn chế brute-force
-* Bảo vệ các endpoint nhạy cảm
+Chạy từ `backend`:
 
----
-
-## 15. Testing
-
-Project sử dụng Vitest cho testing.
+```powershell
+npm run lint
+npm run build
+npm run test:unit
+npm run test:e2e
+```
 
 Các loại test:
 
-### Unit Test
+- Jest: provider unit test.
+- Vitest + Supertest: HTTP e2e test.
+- E2E kiểm tra validation `400`, login sai `401`, thiếu token `401`, ownership, resource không tồn tại `404`, dữ liệu trùng `409`, task/tag và reminder flow.
 
-Kiểm tra logic của service/provider độc lập.
+Frontend:
 
-### API / Integration Test
-
-Kiểm tra flow của backend thông qua HTTP request và các module liên quan.
-
-Chạy test:
-
-```bash
-npm run test
+```powershell
+cd C:\nestjs-task-manager\frontend
+npm run lint
+npm run build
 ```
 
-Chạy test watch:
+## CI
 
-```bash
-npm run test:watch
-```
+Workflow tại `.github/workflows/ci.yml` chạy khi push hoặc pull request vào `main`/`master`.
 
-Chạy coverage:
+CI hiện chạy:
 
-```bash
-npm run test:cov
-```
+1. PostgreSQL service.
+2. `npm ci` trong `backend`.
+3. Prisma generate và migration.
+4. Backend lint.
+5. Jest unit test.
+6. Supertest e2e test.
+7. Backend build.
 
----
+Frontend hiện chưa có job riêng trong workflow CI.
 
-## 16. Docker
+## Dừng môi trường local
 
-Docker Compose cung cấp các dependency cho môi trường development:
-
-```text
-┌───────────────────────────┐
-│        Docker Compose     │
-│                           │
-│  PostgreSQL               │
-│  port: 5432               │
-│                           │
-│  Mailpit                  │
-│  SMTP: 1025               │
-│  Web: 8025                │
-└───────────────────────────┘
-             ▲
-             │
-          NestJS
-```
-
-Khởi động:
-
-```bash
-docker compose up -d
-```
-
-Dừng:
-
-```bash
+```powershell
+cd C:\nestjs-task-manager\backend
 docker compose down
 ```
 
----
+Lệnh trên giữ lại dữ liệu PostgreSQL trong volume. Muốn xóa cả dữ liệu:
 
-## 17. Git Workflow
-
-Project sử dụng Git để quản lý source code.
-
-Quy trình đề xuất:
-
-```text
-main
- │
- ├── feature/auth
- ├── feature/tasks
- ├── feature/reminders
- └── feature/mail
+```powershell
+docker compose down -v
 ```
 
-Các thay đổi nên được phát triển trên feature branch và merge thông qua Pull Request.
-
-Commit nên mô tả rõ thay đổi, ví dụ:
-
-```text
-feat: add task creation API
-feat: add JWT authentication
-fix: validate task deadline
-test: add task service tests
-docs: update API documentation
-```
-
----
-
-## 18. Security
-
-Một số cơ chế bảo mật được áp dụng:
-
-* Password được hash bằng bcrypt
-* JWT authentication
-* Request validation
-* CORS configuration
-* Rate limiting
-* Không commit secrets vào Git
-* Environment variables cho configuration
-* Kiểm soát dữ liệu đầu vào trước khi truy cập database
-
----
-
-## 19. Mục tiêu kỹ thuật của project
-
-Project tập trung vào việc thực hành các cơ chế của NestJS:
-
-```text
-NestJS
-│
-├── Module
-├── Controller
-├── Provider
-├── Dependency Injection
-├── DTO
-├── ValidationPipe
-├── Guard
-├── Exception Filter
-├── Interceptor
-├── Configuration
-├── Prisma
-├── Authentication
-├── Scheduling / Reminder
-└── Testing
-```
-
-Các kỹ thuật nâng cao chỉ được sử dụng khi có nhu cầu thực tế của hệ thống, nhằm tránh đưa thêm công nghệ không cần thiết.
-
----
-
-## 20. License
-
-Project được thực hiện cho mục đích học tập và nghiên cứu công nghệ NestJS.
+Chỉ dùng `-v` khi muốn reset database.
