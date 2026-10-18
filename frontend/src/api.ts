@@ -1,4 +1,4 @@
-import type { AuthResponse, Category, Task, TaskListResponse, TaskPriority, TaskStatus, User } from './types';
+import type { AuthResponse, Category, Reminder, Tag, Task, TaskListResponse, TaskPriority, TaskStatus, User } from './types';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 const TOKEN_KEY = 'task_manager_access_token';
@@ -31,17 +31,29 @@ export const api = {
   login: (body: { email: string; password: string }) =>
     request<AuthResponse>('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   me: () => request<User>('/auth/me'),
-  listTasks: (params: { page: number; status?: TaskStatus; priority?: TaskPriority; categoryId?: string }) => {
-    const search = new URLSearchParams({ page: String(params.page), limit: '8', sortBy: 'createdAt', order: 'desc' });
+  listTasks: (params: { page: number; status?: TaskStatus; priority?: TaskPriority; categoryId?: string; sortBy?: 'createdAt' | 'dueAt'; order?: 'asc' | 'desc' }) => {
+    const search = new URLSearchParams({ page: String(params.page), limit: '8', sortBy: params.sortBy ?? 'createdAt', order: params.order ?? 'desc' });
     if (params.status) search.set('status', params.status);
     if (params.priority) search.set('priority', params.priority);
     if (params.categoryId) search.set('categoryId', params.categoryId);
     return request<TaskListResponse>(`/tasks?${search}`);
   },
-  createTask: (body: { title: string; description?: string; priority?: TaskPriority; categoryId?: string }) =>
+  createTask: (body: { title: string; description?: string; status?: TaskStatus; priority?: TaskPriority; categoryId?: string; parentId?: string; dueAt?: string }) =>
     request<Task>('/tasks', { method: 'POST', body: JSON.stringify(body) }),
-  updateTask: (id: string, body: { status?: TaskStatus; title?: string }) =>
+  updateTask: (id: string, body: { status?: TaskStatus; title?: string; description?: string; priority?: TaskPriority; categoryId?: string; parentId?: string; dueAt?: string }) =>
     request<Task>(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   deleteTask: (id: string) => request<void>(`/tasks/${id}`, { method: 'DELETE' }),
   listCategories: () => request<Category[]>('/categories'),
+  createCategory: (body: { name: string; colorHex?: string; icon?: string }) =>
+    request<Category>('/categories', { method: 'POST', body: JSON.stringify(body) }),
+  deleteCategory: (id: string) => request<void>(`/categories/${id}`, { method: 'DELETE' }),
+  listTags: () => request<Tag[]>('/tags'),
+  createTag: (body: { name: string; colorHex?: string }) =>
+    request<Tag>('/tags', { method: 'POST', body: JSON.stringify(body) }),
+  deleteTag: (id: string) => request<void>(`/tags/${id}`, { method: 'DELETE' }),
+  attachTag: (taskId: string, tagId: string) =>
+    request<Task>(`/tasks/${taskId}/tags`, { method: 'POST', body: JSON.stringify({ tagId }) }),
+  detachTag: (taskId: string, tagId: string) =>
+    request<void>(`/tasks/${taskId}/tags/${tagId}`, { method: 'DELETE' }),
+  listReminders: () => request<Reminder[]>('/reminders'),
 };
