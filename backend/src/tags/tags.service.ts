@@ -1,6 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
@@ -21,11 +20,18 @@ export class TagsService {
     try {
       return await this.prisma.tag.create({ data: { userId, ...data } });
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+      if (this.isUniqueConstraintError(error)) {
         throw new ConflictException('Tag name already exists');
       }
       throw error;
     }
+  }
+
+  private isUniqueConstraintError(error: unknown): boolean {
+    return typeof error === 'object'
+      && error !== null
+      && 'code' in error
+      && error.code === 'P2002';
   }
 
   async update(userId: string, id: string, data: Prisma.TagUpdateInput) {
