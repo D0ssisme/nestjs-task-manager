@@ -1,3 +1,4 @@
+
 import {
   ArgumentsHost,
   Catch,
@@ -6,7 +7,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response } from 'express';
 import type { RequestWithId } from '../middleware/request-id.middleware.js';
 
 @Catch()
@@ -17,51 +18,46 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const context = host.switchToHttp();
     const response = context.getResponse<Response>();
     const request = context.getRequest<RequestWithId>();
+
     const status = exception instanceof HttpException
       ? exception.getStatus()
       : HttpStatus.INTERNAL_SERVER_ERROR;
+
     const exceptionResponse = exception instanceof HttpException
       ? exception.getResponse()
       : { message: 'Internal server error' };
-    const body = typeof exceptionResponse === 'object' && exceptionResponse !== null
-      ? exceptionResponse
-      : { message: exceptionResponse };
-    const errorMessage = this.getErrorMessage(body);
+
+    const body =
+      typeof exceptionResponse === 'object' && exceptionResponse !== null
+        ? exceptionResponse
+        : { message: exceptionResponse };
+
+    const timestamp = new Date().toISOString();
+    const requestId = request.requestId ?? 'unknown';
+    const error = exception instanceof Error ? exception : undefined;
+
+    // Structured log dạng JSON, có thể tìm kiếm bằng requestId.
     const logEntry = {
-      event: 'http_request',
-      requestId: request.requestId,
+      event: 'http.exception',
+      timestamp,
+      requestId,
       method: request.method,
       path: request.originalUrl ?? request.url,
       statusCode: status,
-      errorType: exception instanceof Error ? exception.constructor.name : 'UnknownError',
-      message: errorMessage,
+      errorName: error?.name ?? 'UnknownError',
+      errorMessage: error?.message ?? String(exception),
+      stack: error?.stack ?? null,
     };
 
     this.logger.error(JSON.stringify(logEntry));
 
+    // Không gửi stack trace nội bộ cho client.
     response.status(status).json({
       statusCode: status,
-      timestamp: new Date().toISOString(),
-      path: request.url,
+      timestamp,
+      path: request.originalUrl ?? request.url,
       ...body,
-      requestId: request.requestId,
+      requestId,
     });
-  }
-
-  private getErrorMessage(body: object): string | string[] {
-    if (!('message' in body)) {
-      return 'Internal server error';
-    }
-
-    const message = body.message;
-    if (typeof message === 'string') {
-      return message;
-    }
-
-    if (Array.isArray(message) && message.every((item) => typeof item === 'string')) {
-      return message;
-    }
-
-    return 'Request failed';
   }
 }
