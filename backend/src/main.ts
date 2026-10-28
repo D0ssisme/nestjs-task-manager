@@ -15,7 +15,19 @@ async function bootstrap() {
   }));
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new RequestTimingInterceptor());
-  app.enableCors({ origin: process.env.CORS_ORIGIN?.split(',') ?? false });
+ const corsOrigins = (
+  process.env.CORS_ORIGIN ??
+  'http://localhost:5173,http://127.0.0.1:5173'
+)
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.enableCors({
+  origin: corsOrigins,
+  methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+});
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('NestJS Task Manager API')
