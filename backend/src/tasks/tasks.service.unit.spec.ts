@@ -1,5 +1,5 @@
-import { NotFoundException } from '@nestjs/common';
-import { jest } from '@jest/globals';
+﻿import { NotFoundException } from '@nestjs/common';
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { TasksService } from './tasks.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -7,24 +7,24 @@ describe('TasksService', () => {
   let service: TasksService;
   let prisma: {
     task: {
-      findMany: jest.Mock;
-      count: jest.Mock;
-      findFirst: jest.Mock;
-      create: jest.Mock;
-      update: jest.Mock;
-      delete: jest.Mock;
+      findMany: Mock;
+      count: Mock;
+      findFirst: Mock;
+      create: Mock;
+      update: Mock;
+      delete: Mock;
     };
   };
 
   beforeEach(() => {
     prisma = {
       task: {
-        findMany: jest.fn(),
-        count: jest.fn().mockResolvedValue(0),
-        findFirst: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn(),
-        delete: jest.fn(),
+        findMany: vi.fn(),
+        count: vi.fn().mockResolvedValue(0),
+        findFirst: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
       },
     };
     service = new TasksService(prisma as unknown as PrismaService);

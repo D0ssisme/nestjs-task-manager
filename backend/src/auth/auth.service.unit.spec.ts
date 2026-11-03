@@ -1,25 +1,25 @@
-import { ConflictException, UnauthorizedException } from '@nestjs/common';
+﻿import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { jest } from '@jest/globals';
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { AuthService } from './auth.service.js';
 import { UsersService } from '../users/users.service.js';
 
 describe('AuthService', () => {
   let service: AuthService;
   let usersService: {
-    findByEmail: jest.Mock;
-    create: jest.Mock;
-    findOne: jest.Mock;
+    findByEmail: Mock;
+    create: Mock;
+    findOne: Mock;
   };
-  let jwtService: { signAsync: jest.Mock };
+  let jwtService: { signAsync: Mock };
 
   beforeEach(() => {
     usersService = {
-      findByEmail: jest.fn(),
-      create: jest.fn(),
-      findOne: jest.fn(),
+      findByEmail: vi.fn(),
+      create: vi.fn(),
+      findOne: vi.fn(),
     };
-    jwtService = { signAsync: jest.fn().mockResolvedValue('test-token') };
+    jwtService = { signAsync: vi.fn().mockResolvedValue('test-token') };
     service = new AuthService(
       usersService as unknown as UsersService,
       jwtService as unknown as JwtService,
