@@ -20,11 +20,7 @@ export class TagsService {
     try {
       return await this.prisma.tag.create({ data: { userId, ...data } });
     } catch (error) {
-<<<<<<< HEAD
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-=======
       if (this.isUniqueConstraintError(error)) {
->>>>>>> feat/auth-ui-clean
         throw new ConflictException('Tag name already exists');
       }
       throw error;
