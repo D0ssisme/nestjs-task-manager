@@ -34,12 +34,7 @@ jobs:
       JWT_SECRET: ci-only-test-secret
       JWT_EXPIRES_IN: 15m
       PORT: 3001
-      MAIL_PROVIDER: smtp
-      SMTP_HOST: localhost
-      SMTP_PORT: 1025
-      SMTP_USER: ''
-      SMTP_PASS: ''
-      MAIL_FROM: Task App <no-reply@taskapp.local>
+      TASK_EVIDENCE_DIR: ${{ github.workspace }}/artifacts
 
     steps:
       - name: Checkout repository
@@ -64,11 +59,41 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Prepare test reports
+        run: mkdir -p "$TASK_EVIDENCE_DIR"
+
+      - name: Run Vitest tests
+        run: npm test -- --reporter=json --outputFile=../artifacts/vitest.json
+
       - name: Run Jest unit tests
-        run: npm run test:unit
+        run: npm run test:unit -- --runInBand --json --outputFile=../artifacts/jest.json
 
       - name: Run Supertest e2e tests
-        run: npm run test:e2e
+        run: npm run test:e2e -- --reporter=json --outputFile=../artifacts/e2e.json
 
       - name: Build
         run: npm run build
+
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-evidence
+          path: artifacts/
+          if-no-files-found: warn
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm run lint

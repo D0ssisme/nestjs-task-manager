@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -60,7 +60,7 @@ export class TagsController {
   @ApiOkResponse({ description: 'Tag details', type: TagResponseDto, example: tagExample })
   @ApiNotFoundResponse({ description: 'Tag not found', type: ApiErrorResponseDto })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token', type: ApiErrorResponseDto })
-  findOne(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+  findOne(@CurrentUser() user: JwtPayload, @Param('id', new ParseUUIDPipe()) id: string) {
     return this.tagsService.findOne(user.sub, id);
   }
 
@@ -72,7 +72,7 @@ export class TagsController {
   @ApiNotFoundResponse({ description: 'Tag not found', type: ApiErrorResponseDto })
   @ApiConflictResponse({ description: 'Tag name already exists', type: ApiErrorResponseDto })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token', type: ApiErrorResponseDto })
-  update(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() dto: UpdateTagDto) {
+  update(@CurrentUser() user: JwtPayload, @Param('id', new ParseUUIDPipe()) id: string, @Body() dto: UpdateTagDto) {
     return this.tagsService.update(user.sub, id, dto);
   }
 
@@ -83,7 +83,7 @@ export class TagsController {
   @ApiNoContentResponse({ description: 'Tag deleted' })
   @ApiNotFoundResponse({ description: 'Tag not found', type: ApiErrorResponseDto })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token', type: ApiErrorResponseDto })
-  async remove(@CurrentUser() user: JwtPayload, @Param('id') id: string): Promise<void> {
+  async remove(@CurrentUser() user: JwtPayload, @Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
     await this.tagsService.remove(user.sub, id);
   }
 }

@@ -1,0 +1,2259 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created and access token issued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                },
+                "example": {
+                  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "user": {
+                    "id": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+                    "email": "alice@example.com",
+                    "fullName": "Alice Nguyen",
+                    "timezone": "Asia/Ho_Chi_Minh"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email is already registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Register a new account",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Access token issued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                },
+                "example": {
+                  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "user": {
+                    "id": "7f6d2e1a-8d5b-4c77-9f35-9a51-8d5e7c3b1f20",
+                    "email": "alice@example.com",
+                    "fullName": "Alice Nguyen",
+                    "timezone": "Asia/Ho_Chi_Minh"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid email or password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Login with email and password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current user profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                },
+                "example": {
+                  "id": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+                  "email": "alice@example.com",
+                  "fullName": "Alice Nguyen",
+                  "timezone": "Asia/Ho_Chi_Minh",
+                  "createdAt": "2026-10-13T09:00:00.000Z",
+                  "updatedAt": "2026-10-13T09:00:00.000Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get the current authenticated user",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/users/me": {
+      "get": {
+        "operationId": "UsersController_findOne",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "User profile returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                },
+                "example": {
+                  "id": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+                  "email": "alice@example.com",
+                  "fullName": "Alice Nguyen",
+                  "timezone": "Asia/Ho_Chi_Minh",
+                  "createdAt": "2026-10-13T09:00:00.000Z",
+                  "updatedAt": "2026-10-13T09:00:00.000Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get the current user profile",
+        "tags": [
+          "users"
+        ]
+      },
+      "patch": {
+        "operationId": "UsersController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User profile updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                },
+                "example": {
+                  "id": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+                  "email": "alice@example.com",
+                  "fullName": "Alice Nguyen",
+                  "timezone": "Asia/Ho_Chi_Minh",
+                  "createdAt": "2026-10-13T09:00:00.000Z",
+                  "updatedAt": "2026-10-13T09:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email is already in use",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update the current user profile",
+        "tags": [
+          "users"
+        ]
+      },
+      "delete": {
+        "operationId": "UsersController_remove",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "User deleted"
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Delete the current user account",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/tasks": {
+      "post": {
+        "operationId": "TasksController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Task created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponseDto"
+                },
+                "example": {
+                  "id": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+                  "userId": "11111111-1111-4111-8111-111111111111",
+                  "categoryId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                  "parentId": null,
+                  "title": "Prepare project presentation",
+                  "description": "Finish slides and rehearse the demo",
+                  "status": "TODO",
+                  "priority": "HIGH",
+                  "dueAt": "2026-10-20T09:00:00.000Z",
+                  "completedAt": null,
+                  "createdAt": "2026-10-13T09:00:00.000Z",
+                  "updatedAt": "2026-10-13T09:00:00.000Z",
+                  "category": null,
+                  "taskTags": []
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid task data or relation ownership",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Create a task",
+        "tags": [
+          "tasks"
+        ]
+      },
+      "get": {
+        "operationId": "TasksController_findAll",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "TODO",
+                "IN_PROGRESS",
+                "DONE",
+                "ARCHIVED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "priority",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "URGENT"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "example": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "dueAt",
+                "createdAt"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated task list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskListResponseDto"
+                },
+                "example": {
+                  "data": [
+                    {
+                      "id": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+                      "userId": "11111111-1111-4111-8111-111111111111",
+                      "categoryId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                      "parentId": null,
+                      "title": "Prepare project presentation",
+                      "description": "Finish slides and rehearse the demo",
+                      "status": "TODO",
+                      "priority": "HIGH",
+                      "dueAt": "2026-10-20T09:00:00.000Z",
+                      "completedAt": null,
+                      "createdAt": "2026-10-13T09:00:00.000Z",
+                      "updatedAt": "2026-10-13T09:00:00.000Z",
+                      "category": null,
+                      "taskTags": []
+                    }
+                  ],
+                  "meta": {
+                    "page": 1,
+                    "limit": 20,
+                    "total": 1,
+                    "totalPages": 1
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List tasks with filtering, pagination and sorting",
+        "tags": [
+          "tasks"
+        ]
+      }
+    },
+    "/tasks/{id}": {
+      "get": {
+        "operationId": "TasksController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "example": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponseDto"
+                },
+                "example": {
+                  "id": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+                  "userId": "11111111-1111-4111-8111-111111111111",
+                  "categoryId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                  "parentId": null,
+                  "title": "Prepare project presentation",
+                  "description": "Finish slides and rehearse the demo",
+                  "status": "TODO",
+                  "priority": "HIGH",
+                  "dueAt": "2026-10-20T09:00:00.000Z",
+                  "completedAt": null,
+                  "createdAt": "2026-10-13T09:00:00.000Z",
+                  "updatedAt": "2026-10-13T09:00:00.000Z",
+                  "category": null,
+                  "taskTags": []
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found or not owned by current user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get a task by ID",
+        "tags": [
+          "tasks"
+        ]
+      },
+      "patch": {
+        "operationId": "TasksController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "example": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaskDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponseDto"
+                },
+                "example": {
+                  "id": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+                  "userId": "11111111-1111-4111-8111-111111111111",
+                  "categoryId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                  "parentId": null,
+                  "title": "Prepare final project presentation",
+                  "description": "Finish slides and rehearse the demo",
+                  "status": "DONE",
+                  "priority": "HIGH",
+                  "dueAt": "2026-10-20T09:00:00.000Z",
+                  "completedAt": "2026-10-13T10:00:00.000Z",
+                  "createdAt": "2026-10-13T09:00:00.000Z",
+                  "updatedAt": "2026-10-13T09:00:00.000Z",
+                  "category": null,
+                  "taskTags": []
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid task data or relation ownership",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update a task",
+        "tags": [
+          "tasks"
+        ]
+      },
+      "delete": {
+        "operationId": "TasksController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "example": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Task deleted"
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Delete a task",
+        "tags": [
+          "tasks"
+        ]
+      }
+    },
+    "/tasks/{id}/tags": {
+      "post": {
+        "operationId": "TasksController_attachTag",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "example": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tag attached to task",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponseDto"
+                },
+                "example": {
+                  "id": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+                  "userId": "11111111-1111-4111-8111-111111111111",
+                  "categoryId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                  "parentId": null,
+                  "title": "Prepare project presentation",
+                  "description": "Finish slides and rehearse the demo",
+                  "status": "TODO",
+                  "priority": "HIGH",
+                  "dueAt": "2026-10-20T09:00:00.000Z",
+                  "completedAt": null,
+                  "createdAt": "2026-10-13T09:00:00.000Z",
+                  "updatedAt": "2026-10-13T09:00:00.000Z",
+                  "category": null,
+                  "taskTags": []
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tag does not belong to the current user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Tag is already attached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Attach a tag to a task",
+        "tags": [
+          "tasks"
+        ]
+      }
+    },
+    "/tasks/{id}/tags/{tagId}": {
+      "delete": {
+        "operationId": "TasksController_detachTag",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "example": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tagId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "example": "a1b2c3d4-e5f6-4789-abcd-1234567890ab",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Tag detached"
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task or tag relation not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Detach a tag from a task",
+        "tags": [
+          "tasks"
+        ]
+      }
+    },
+    "/categories": {
+      "post": {
+        "operationId": "CategoriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Category created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryResponseDto"
+                },
+                "example": {
+                  "id": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+                  "userId": "11111111-1111-4111-8111-111111111111",
+                  "name": "Work",
+                  "colorHex": "#2563EB",
+                  "icon": "briefcase",
+                  "createdAt": "2026-10-13T09:00:00.000Z",
+                  "updatedAt": "2026-10-13T09:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Category name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Create a category",
+        "tags": [
+          "categories"
+        ]
+      },
+      "get": {
+        "operationId": "CategoriesController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Category list returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryResponseDto"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+                    "userId": "11111111-1111-4111-8111-111111111111",
+                    "name": "Work",
+                    "colorHex": "#2563EB",
+                    "icon": "briefcase",
+                    "createdAt": "2026-10-13T09:00:00.000Z",
+                    "updatedAt": "2026-10-13T09:00:00.000Z"
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List current user categories",
+        "tags": [
+          "categories"
+        ]
+      }
+    },
+    "/categories/{id}": {
+      "get": {
+        "operationId": "CategoriesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "example": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryResponseDto"
+                },
+                "example": {
+                  "id": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+                  "userId": "11111111-1111-4111-8111-111111111111",
+                  "name": "Work",
+                  "colorHex": "#2563EB",
+                  "icon": "briefcase",
+                  "createdAt": "2026-10-13T09:00:00.000Z",
+                  "updatedAt": "2026-10-13T09:00:00.000Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get a category by ID",
+        "tags": [
+          "categories"
+        ]
+      },
+      "patch": {
+        "operationId": "CategoriesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "example": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Category updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryResponseDto"
+                },
+                "example": {
+                  "id": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+                  "userId": "11111111-1111-4111-8111-111111111111",
+                  "name": "Personal",
+                  "colorHex": "#16A34A",
+                  "icon": "home",
+                  "createdAt": "2026-10-13T09:00:00.000Z",
+                  "updatedAt": "2026-10-13T09:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Category name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update a category",
+        "tags": [
+          "categories"
+        ]
+      },
+      "delete": {
+        "operationId": "CategoriesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "example": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Category deleted"
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Delete a category",
+        "tags": [
+          "categories"
+        ]
+      }
+    },
+    "/tags": {
+      "post": {
+        "operationId": "TagsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tag created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponseDto"
+                },
+                "example": {
+                  "id": "a1b2c3d4-e5f6-4789-abcd-1234567890ab",
+                  "userId": "11111111-1111-4111-8111-111111111111",
+                  "name": "urgent",
+                  "colorHex": "#DC2626",
+                  "createdAt": "2026-10-13T09:00:00.000Z",
+                  "updatedAt": "2026-10-13T09:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Tag name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Create a tag",
+        "tags": [
+          "tags"
+        ]
+      },
+      "get": {
+        "operationId": "TagsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Tag list returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagResponseDto"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "a1b2c3d4-e5f6-4789-abcd-1234567890ab",
+                    "userId": "11111111-1111-4111-8111-111111111111",
+                    "name": "urgent",
+                    "colorHex": "#DC2626",
+                    "createdAt": "2026-10-13T09:00:00.000Z",
+                    "updatedAt": "2026-10-13T09:00:00.000Z"
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List current user tags",
+        "tags": [
+          "tags"
+        ]
+      }
+    },
+    "/tags/{id}": {
+      "get": {
+        "operationId": "TagsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "example": "a1b2c3d4-e5f6-4789-abcd-1234567890ab",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tag details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponseDto"
+                },
+                "example": {
+                  "id": "a1b2c3d4-e5f6-4789-abcd-1234567890ab",
+                  "userId": "11111111-1111-4111-8111-111111111111",
+                  "name": "urgent",
+                  "colorHex": "#DC2626",
+                  "createdAt": "2026-10-13T09:00:00.000Z",
+                  "updatedAt": "2026-10-13T09:00:00.000Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tag not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get a tag by ID",
+        "tags": [
+          "tags"
+        ]
+      },
+      "patch": {
+        "operationId": "TagsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "example": "a1b2c3d4-e5f6-4789-abcd-1234567890ab",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tag updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponseDto"
+                },
+                "example": {
+                  "id": "a1b2c3d4-e5f6-4789-abcd-1234567890ab",
+                  "userId": "11111111-1111-4111-8111-111111111111",
+                  "name": "blocked",
+                  "colorHex": "#F59E0B",
+                  "createdAt": "2026-10-13T09:00:00.000Z",
+                  "updatedAt": "2026-10-13T09:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tag not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Tag name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update a tag",
+        "tags": [
+          "tags"
+        ]
+      },
+      "delete": {
+        "operationId": "TagsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "example": "a1b2c3d4-e5f6-4789-abcd-1234567890ab",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Tag deleted"
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tag not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Delete a tag",
+        "tags": [
+          "tags"
+        ]
+      }
+    },
+    "/reminders": {
+      "get": {
+        "operationId": "RemindersController_findForUser",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Overdue tasks and tasks due within 24 hours, excluding completed and archived tasks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReminderResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List overdue and upcoming task notifications",
+        "tags": [
+          "reminders"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "NestJS Task Manager API",
+    "description": "API for authentication and task management",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "access-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "alice@example.com",
+            "description": "Unique account email"
+          },
+          "password": {
+            "type": "string",
+            "example": "StrongPass1!"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Alice Nguyen"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67"
+          },
+          "email": {
+            "type": "string",
+            "example": "alice@example.com"
+          },
+          "fullName": {
+            "type": "object",
+            "example": "Alice Nguyen",
+            "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Ho_Chi_Minh"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-13T09:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-13T09:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "timezone",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AuthResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          }
+        },
+        "required": [
+          "accessToken",
+          "user"
+        ]
+      },
+      "ApiErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 400
+          },
+          "message": {
+            "oneOf": [
+              {
+                "type": "string",
+                "example": "Task not found"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": [
+                  "title must be a string"
+                ]
+              }
+            ]
+          },
+          "error": {
+            "type": "string",
+            "example": "Bad Request"
+          },
+          "requestId": {
+            "type": "string",
+            "example": "client-request-123"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "path": {
+            "type": "string",
+            "example": "/tasks"
+          }
+        },
+        "required": [
+          "statusCode",
+          "message",
+          "requestId",
+          "timestamp",
+          "path"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "alice@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "StrongPass1!"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "alice@example.com"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Alice Nguyen"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Ho_Chi_Minh"
+          }
+        }
+      },
+      "CreateTaskDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Prepare project presentation"
+          },
+          "description": {
+            "type": "string",
+            "example": "Finish slides and rehearse the demo"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "TODO",
+              "IN_PROGRESS",
+              "DONE",
+              "ARCHIVED"
+            ],
+            "example": "TODO"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "URGENT"
+            ],
+            "example": "HIGH"
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67"
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "2d6f5b4a-6e2c-4a9c-9a51-8d5e7c3b1f20"
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-20T09:00:00.000Z"
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "CategoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "11111111-1111-4111-8111-111111111111"
+          },
+          "name": {
+            "type": "string",
+            "example": "Work"
+          },
+          "colorHex": {
+            "type": "string",
+            "example": "#2563EB"
+          },
+          "icon": {
+            "type": "object",
+            "example": "briefcase",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-13T09:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-13T09:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "name",
+          "colorHex",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TagResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "a1b2c3d4-e5f6-4789-abcd-1234567890ab"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "11111111-1111-4111-8111-111111111111"
+          },
+          "name": {
+            "type": "string",
+            "example": "urgent"
+          },
+          "colorHex": {
+            "type": "string",
+            "example": "#DC2626"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-13T09:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-13T09:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "name",
+          "colorHex",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TaskTagResponseDto": {
+        "type": "object",
+        "properties": {
+          "tag": {
+            "$ref": "#/components/schemas/TagResponseDto"
+          }
+        },
+        "required": [
+          "tag"
+        ]
+      },
+      "TaskResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "11111111-1111-4111-8111-111111111111"
+          },
+          "categoryId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "example": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+          },
+          "parentId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "example": null
+          },
+          "title": {
+            "type": "string",
+            "example": "Prepare project presentation"
+          },
+          "description": {
+            "type": "object",
+            "example": "Finish slides and rehearse the demo",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "TODO",
+              "IN_PROGRESS",
+              "DONE",
+              "ARCHIVED"
+            ],
+            "example": "TODO"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "URGENT"
+            ],
+            "example": "HIGH"
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2026-10-20T09:00:00.000Z"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-13T09:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-13T09:00:00.000Z"
+          },
+          "category": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CategoryResponseDto"
+              }
+            ]
+          },
+          "taskTags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskTagResponseDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "title",
+          "status",
+          "priority",
+          "createdAt",
+          "updatedAt",
+          "taskTags"
+        ]
+      },
+      "TaskListResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskResponseDto"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "example": {
+              "page": 1,
+              "limit": 20,
+              "total": 1,
+              "totalPages": 1
+            }
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
+      "UpdateTaskDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Prepare final project presentation"
+          },
+          "description": {
+            "type": "string",
+            "example": "Updated description"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "TODO",
+              "IN_PROGRESS",
+              "DONE",
+              "ARCHIVED"
+            ],
+            "example": "DONE"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "URGENT"
+            ],
+            "example": "URGENT"
+          },
+          "categoryId": {
+            "type": "object",
+            "format": "uuid",
+            "example": "7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67"
+          },
+          "parentId": {
+            "type": "object",
+            "format": "uuid",
+            "example": "2d6f5b4a-6e2c-4a9c-9a51-8d5e7c3b1f20"
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-20T09:00:00.000Z"
+          }
+        }
+      },
+      "AttachTagDto": {
+        "type": "object",
+        "properties": {
+          "tagId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "a1b2c3d4-e5f6-4789-abcd-1234567890ab"
+          }
+        },
+        "required": [
+          "tagId"
+        ]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Work"
+          },
+          "colorHex": {
+            "type": "string",
+            "example": "#2563EB"
+          },
+          "icon": {
+            "type": "string",
+            "example": "briefcase"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Personal"
+          },
+          "colorHex": {
+            "type": "string",
+            "example": "#16A34A"
+          },
+          "icon": {
+            "type": "string",
+            "example": "home"
+          }
+        }
+      },
+      "CreateTagDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "urgent"
+          },
+          "colorHex": {
+            "type": "string",
+            "example": "#DC2626"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateTagDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "blocked"
+          },
+          "colorHex": {
+            "type": "string",
+            "example": "#F59E0B"
+          }
+        }
+      },
+      "ReminderResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the task requiring attention"
+          },
+          "title": {
+            "type": "string",
+            "example": "Prepare presentation"
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "URGENT"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "overdue",
+              "upcoming"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "dueAt",
+          "priority",
+          "kind"
+        ]
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { TaskPriority, TaskStatus } from '@prisma/client';
-import { IsDate, IsEnum, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min, MinLength } from 'class-validator';
+import { IsDate, IsEnum, IsInt, IsOptional, IsString, IsUUID, MaxLength, Max, Min, MinLength, ValidateIf } from 'class-validator';
 
 export class CreateTaskDto {
   @ApiProperty({ example: 'Prepare project presentation' })
@@ -44,7 +44,7 @@ export class CreateTaskDto {
 
 export class UpdateTaskDto {
   @ApiPropertyOptional({ example: 'Prepare final project presentation' })
-  @IsOptional()
+  @ValidateIf((_object, value: unknown) => value !== undefined)
   @IsString()
   @MinLength(1)
   @MaxLength(255)
@@ -56,30 +56,30 @@ export class UpdateTaskDto {
   description?: string;
 
   @ApiPropertyOptional({ enum: TaskStatus, example: TaskStatus.DONE })
-  @IsOptional()
+  @ValidateIf((_object, value: unknown) => value !== undefined)
   @IsEnum(TaskStatus)
   status?: TaskStatus;
 
   @ApiPropertyOptional({ enum: TaskPriority, example: TaskPriority.URGENT })
-  @IsOptional()
+  @ValidateIf((_object, value: unknown) => value !== undefined)
   @IsEnum(TaskPriority)
   priority?: TaskPriority;
 
   @ApiPropertyOptional({ format: 'uuid', example: '7f6d2e1a-8d5b-4c77-9f35-9a0b1d4e5f67' })
   @IsOptional()
   @IsUUID()
-  categoryId?: string;
+  categoryId?: string | null;
 
   @ApiPropertyOptional({ format: 'uuid', example: '2d6f5b4a-6e2c-4a9c-9a51-8d5e7c3b1f20' })
   @IsOptional()
   @IsUUID()
-  parentId?: string;
+  parentId?: string | null;
 
   @ApiPropertyOptional({ type: String, format: 'date-time', example: '2026-10-20T09:00:00.000Z' })
   @IsOptional()
   @Type(() => Date)
   @IsDate()
-  dueAt?: Date;
+  dueAt?: Date | null;
 }
 
 export enum TaskSortBy {
@@ -120,6 +120,7 @@ export class ListTasksQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(100)
   limit = 20;
 
   @ApiPropertyOptional({ enum: TaskSortBy, example: TaskSortBy.CREATED_AT, default: TaskSortBy.CREATED_AT })

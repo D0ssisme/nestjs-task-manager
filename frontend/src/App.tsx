@@ -85,6 +85,8 @@ function Dashboard({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [tags, setTags] = useState<Tag[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [overview, setOverview] = useState({ total: 0, done: 0, inProgress: 0 });
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [status, setStatus] = useState<TaskStatus | ''>('');
   const [priority, setPriority] = useState<TaskPriority | ''>('');
   const [categoryId, setCategoryId] = useState('');
@@ -98,7 +100,13 @@ function Dashboard({ user, onLogout }: { user: User; onLogout: () => void }) {
 
   async function loadTasks() {
     try {
-      const result = await api.listTasks({ page, status: status || undefined, priority: priority || undefined, categoryId: categoryId || undefined, sortBy, order });
+      const [result, counts, notifications] = await Promise.all([
+        api.listTasks({ page, status: status || undefined, priority: priority || undefined, categoryId: categoryId || undefined, sortBy, order }),
+        api.overview(), api.listReminders(),
+      ]);
+      setOverview(counts);
+      setReminders(notifications);
+      if (page > Math.max(1, result.meta.totalPages)) setPage(Math.max(1, result.meta.totalPages));
       setTasks(result.data);
       setTotalPages(result.meta.totalPages || 1);
       setError('');
@@ -110,6 +118,7 @@ function Dashboard({ user, onLogout }: { user: User; onLogout: () => void }) {
     const [categoryResult, tagResult] = await Promise.allSettled([api.listCategories(), api.listTags()]);
     if (categoryResult.status === 'fulfilled') setCategories(categoryResult.value);
     if (tagResult.status === 'fulfilled') setTags(tagResult.value);
+    if (categoryResult.status === 'rejected' || tagResult.status === 'rejected') setError('Không thể tải danh mục hoặc nhãn. Vui lòng thử lại.');
   }
   useEffect(() => { void loadTasks(); }, [page, status, priority, categoryId, sortBy, order]);
   useEffect(() => { void loadMetadata(); }, []);
@@ -145,15 +154,15 @@ function Dashboard({ user, onLogout }: { user: User; onLogout: () => void }) {
         </div>
       </header>
       <main className="content">
-        <div className="page-heading"><div><p className="eyebrow">MY WORKSPACE / OVERVIEW</p><h1>Công việc của tôi</h1><p className="muted">Tập trung vào điều quan trọng nhất hôm nay.</p></div><div className="heading-actions"><button className="secondary-button" onClick={() => setShowManagement(!showManagement)}>Quản lý dữ liệu</button><button className="primary-button" onClick={() => setShowForm(!showForm)}>＋ Tạo task</button></div></div>
+        <div className="page-heading"><div><p className="eyebrow">MY WORKSPACE / OVERVIEW</p><h1>Công việc của tôi</h1><p className="muted">Tập trung vào điều quan trọng nhất hôm nay.</p></div><div className="heading-actions"><button className="secondary-button" onClick={() => setShowManagement(!showManagement)}>Quản lý dữ liệu</button><button className="primary-button" onClick={() => { setEditingTask(null); setShowForm(!showForm); }}>＋ Tạo task</button></div></div>
         <section className="overview-grid">
-          <div className="overview-card accent-blue"><span className="overview-icon">◷</span><div><small>Tổng công việc</small><strong>{tasks.length}</strong></div></div>
-          <div className="overview-card accent-green"><span className="overview-icon">✓</span><div><small>Đã hoàn thành</small><strong>{tasks.filter((task) => task.status === 'DONE').length}</strong></div></div>
-          <div className="overview-card accent-orange"><span className="overview-icon">!</span><div><small>Đang thực hiện</small><strong>{tasks.filter((task) => task.status === 'IN_PROGRESS').length}</strong></div></div>
-          <div className="overview-card accent-red"><span className="overview-icon">⌁</span><div><small>Sắp đến hạn</small><strong>{reminders.length}</strong></div></div>
+          <div className="overview-card accent-blue"><span className="overview-icon">◷</span><div><small>Tổng công việc</small><strong>{overview.total}</strong></div></div>
+          <div className="overview-card accent-green"><span className="overview-icon">✓</span><div><small>Đã hoàn thành</small><strong>{overview.done}</strong></div></div>
+          <div className="overview-card accent-orange"><span className="overview-icon">!</span><div><small>Đang thực hiện</small><strong>{overview.inProgress}</strong></div></div>
+          <div className="overview-card accent-red"><span className="overview-icon">⌁</span><div><small>Sắp đến hạn</small><strong>{reminders.filter((item) => item.kind === 'upcoming').length}</strong></div></div>
         </section>
-        {showManagement && <ManagementPanel categories={categories} tags={tags} onChanged={loadMetadata} />}
-        {showForm && <TaskForm categories={categories} onCreated={() => { setShowForm(false); void loadTasks(); }} />}
+        {showManagement && <ManagementPanel categories={categories} tags={tags} onChanged={() => { void loadMetadata(); void loadTasks(); }} />}
+        {showForm && <TaskForm key={editingTask?.id ?? 'new'} task={editingTask ?? undefined} categories={categories} onCreated={() => { setShowForm(false); setEditingTask(null); void loadTasks(); }} onCancel={() => { setShowForm(false); setEditingTask(null); }} />}
         <div className="section-heading"><div><h2>Danh sách công việc</h2><p className="muted">Theo dõi tiến độ và deadline của bạn.</p></div><span className="result-count">{tasks.length} công việc</span></div>
         <div className="toolbar">
           <span className="filter-label">Lọc theo</span><select value={status} onChange={(e) => { setStatus(e.target.value as TaskStatus | ''); setPage(1); }}><option value="">Tất cả trạng thái</option>{Object.entries(statusLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select>
@@ -163,41 +172,106 @@ function Dashboard({ user, onLogout }: { user: User; onLogout: () => void }) {
         </div>
         {error && <div className="error-box">{error}</div>}
         <section className="task-list">
-          {tasks.length === 0 ? <div className="empty-state"><span>✓</span><h2>Chưa có task nào</h2><p>Tạo task đầu tiên để bắt đầu theo dõi công việc.</p></div> : tasks.map((task) => <TaskCard key={task.id} task={task} tags={tags} onStatusChange={changeStatus} onDelete={removeTask} onTagsChanged={loadTasks} />)}
+          {tasks.length === 0 ? <div className="empty-state"><span>✓</span><h2>Chưa có task nào</h2><p>Tạo task đầu tiên để bắt đầu theo dõi công việc.</p></div> : tasks.map((task) => <TaskCard key={task.id} task={task} tags={tags} onEdit={() => { setEditingTask(task); setShowForm(true); }} onStatusChange={changeStatus} onDelete={removeTask} onTagsChanged={loadTasks} />)}
         </section>
-        {tasks.length > 0 && <div className="pagination"><button disabled={page <= 1} onClick={() => setPage(page - 1)}>← Trước</button><span>Trang {page} / {totalPages}</span><button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Sau →</button></div>}
+        {totalPages > 1 && <div className="pagination"><button disabled={page <= 1} onClick={() => setPage(page - 1)}>← Trước</button><span>Trang {page} / {totalPages}</span><button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Sau →</button></div>}
       </main>
     </div>
   );
 }
 
-function TaskCard({ task, tags, onStatusChange, onDelete, onTagsChanged }: { task: Task; tags: Tag[]; onStatusChange: (task: Task, status: TaskStatus) => void; onDelete: (task: Task) => void; onTagsChanged: () => void }) {
+function TaskCard({ task, tags, onEdit, onStatusChange, onDelete, onTagsChanged }: { task: Task; tags: Tag[]; onEdit: () => void; onStatusChange: (task: Task, status: TaskStatus) => void; onDelete: (task: Task) => void; onTagsChanged: () => void }) {
   const [tagId, setTagId] = useState('');
+  const [tagError, setTagError] = useState('');
   const availableTags = tags.filter((tag) => !task.taskTags.some((taskTag) => taskTag.tagId === tag.id));
-  async function attachTag() { if (!tagId) return; await api.attachTag(task.id, tagId); setTagId(''); onTagsChanged(); }
-  async function detachTag(tagIdToRemove: string) { await api.detachTag(task.id, tagIdToRemove); onTagsChanged(); }
-  return <article className={`task-card ${task.status === 'DONE' ? 'completed' : ''}`}><div className="task-main"><button className={`check ${task.status === 'DONE' ? 'checked' : ''}`} onClick={() => void onStatusChange(task, task.status === 'DONE' ? 'TODO' : 'DONE')}>{task.status === 'DONE' ? '✓' : ''}</button><div className="task-copy"><div className="task-title-row"><h3>{task.title}</h3><span className={`status-dot status-${task.status.toLowerCase()}`}>{statusLabels[task.status]}</span></div>{task.description && <p>{task.description}</p>}<div className="task-meta"><span className={`pill priority-${task.priority.toLowerCase()}`}>{priorityLabels[task.priority]}</span>{task.category && <span className="category">{task.category.name}</span>}{task.dueAt && <span className={new Date(task.dueAt) < new Date() && task.status !== 'DONE' ? 'due overdue' : 'due'}>◷ {new Date(task.dueAt).toLocaleString('vi-VN')}</span>}</div><div className="tag-list">{task.taskTags.map(({ tag }) => <button className="tag" key={tag.id} onClick={() => void detachTag(tag.id)} title="Bấm để bỏ tag">#{tag.name} ×</button>)}</div><div className="tag-actions">{availableTags.length > 0 && <><select value={tagId} onChange={(e) => setTagId(e.target.value)}><option value="">Gắn tag...</option>{availableTags.map((tag) => <option key={tag.id} value={tag.id}>{tag.name}</option>)}</select><button className="small-button" onClick={() => void attachTag()}>Gắn</button></>}</div></div></div><div className="task-actions"><select value={task.status} onChange={(e) => void onStatusChange(task, e.target.value as TaskStatus)}>{Object.entries(statusLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select><button className="icon-button" onClick={() => void onDelete(task)}>×</button></div></article>;
+  async function attachTag() { if (!tagId) return; try { await api.attachTag(task.id, tagId); setTagId(''); setTagError(''); onTagsChanged(); } catch (err) { setTagError(err instanceof Error ? err.message : 'Không thể gắn nhãn'); } }
+  async function detachTag(tagIdToRemove: string) { try { await api.detachTag(task.id, tagIdToRemove); setTagError(''); onTagsChanged(); } catch (err) { setTagError(err instanceof Error ? err.message : 'Không thể gỡ nhãn'); } }
+  return <article className={`task-card ${task.status === 'DONE' ? 'completed' : ''}`}><div className="task-main"><button className={`check ${task.status === 'DONE' ? 'checked' : ''}`} onClick={() => void onStatusChange(task, task.status === 'DONE' ? 'TODO' : 'DONE')}>{task.status === 'DONE' ? '✓' : ''}</button><div className="task-copy"><div className="task-title-row"><h3>{task.title}</h3><span className={`status-dot status-${task.status.toLowerCase()}`}>{statusLabels[task.status]}</span></div>{task.description && <p>{task.description}</p>}<div className="task-meta"><span className={`pill priority-${task.priority.toLowerCase()}`}>{priorityLabels[task.priority]}</span>{task.category && <span className="category">{task.category.name}</span>}{task.dueAt && <span className={new Date(task.dueAt) < new Date() && task.status !== 'DONE' ? 'due overdue' : 'due'}>◷ {new Date(task.dueAt).toLocaleString('vi-VN')}</span>}</div><div className="tag-list">{task.taskTags.map(({ tag }) => <button className="tag" key={tag.id} onClick={() => void detachTag(tag.id)} title="Bấm để bỏ tag">#{tag.name} ×</button>)}</div><div className="tag-actions">{tagError && <p role="alert" className="error-box">{tagError}</p>}{availableTags.length > 0 && <><select value={tagId} onChange={(e) => setTagId(e.target.value)}><option value="">Gắn tag...</option>{availableTags.map((tag) => <option key={tag.id} value={tag.id}>{tag.name}</option>)}</select><button className="small-button" onClick={() => void attachTag()}>Gắn</button></>}</div></div></div><div className="task-actions"><button className="small-button" onClick={onEdit}>Sửa</button><select value={task.status} onChange={(e) => void onStatusChange(task, e.target.value as TaskStatus)}>{Object.entries(statusLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select><button className="icon-button" onClick={() => void onDelete(task)}>×</button></div></article>;
 }
 
-function TaskForm({ categories, onCreated }: { categories: Category[]; onCreated: () => void }) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<TaskPriority>('MEDIUM');
-  const [categoryId, setCategoryId] = useState('');
-  const [dueAt, setDueAt] = useState('');
+function TaskForm({ categories, task, onCreated, onCancel }: { categories: Category[]; task?: Task; onCreated: () => void; onCancel: () => void }) {
+  const [title, setTitle] = useState(task?.title ?? '');
+  const [description, setDescription] = useState(task?.description ?? '');
+  const [priority, setPriority] = useState<TaskPriority>(task?.priority ?? 'MEDIUM');
+  const [categoryId, setCategoryId] = useState(task?.categoryId ?? '');
+  const [dueAt, setDueAt] = useState(() => {
+    if (!task?.dueAt) return '';
+    const date = new Date(task.dueAt);
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+  });
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
   async function submit(event: FormEvent) {
     event.preventDefault();
-    try { await api.createTask({ title, description, priority, categoryId: categoryId || undefined, dueAt: dueAt ? new Date(dueAt).toISOString() : undefined }); onCreated(); }
-    catch (err) { setError(err instanceof Error ? err.message : 'Không thể tạo task'); }
+    if (!title.trim()) { setError('Vui lòng nhập tên công việc.'); return; }
+    setBusy(true);
+    try {
+      const values = { title: title.trim(), description, priority };
+      if (task) {
+        await api.updateTask(task.id, { ...values, categoryId: categoryId || null, dueAt: dueAt ? new Date(dueAt).toISOString() : null });
+      } else {
+        await api.createTask({ ...values, categoryId: categoryId || undefined, dueAt: dueAt ? new Date(dueAt).toISOString() : undefined });
+      }
+      onCreated();
+    } catch (err) { setError(err instanceof Error ? err.message : 'Không thể lưu công việc'); }
+    finally { setBusy(false); }
   }
-  return <form className="task-form" onSubmit={submit}><div className="form-row"><input autoFocus required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Tên task..." /><select value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)}>{Object.entries(priorityLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select><select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}><option value="">Không có category</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select><label className="inline-label">Hạn <input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} /></label><button className="primary-button">Lưu</button></div><textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Mô tả (không bắt buộc)" />{error && <div className="error-box">{error}</div>}</form>;
+  return <form className="task-form" onSubmit={submit}>
+    <h3>{task ? 'Sửa công việc' : 'Tạo công việc'}</h3>
+    <div className="form-row">
+      <input aria-label="Tên công việc" autoFocus required maxLength={255} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Tên task..." />
+      <select aria-label="Mức ưu tiên" value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)}>{Object.entries(priorityLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select>
+      <select aria-label="Danh mục" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}><option value="">Không có category</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select>
+      <label className="inline-label">Hạn <input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} /></label>
+      <button className="primary-button" disabled={busy}>{busy ? 'Đang lưu...' : 'Lưu'}</button>
+      <button type="button" className="secondary-button" onClick={onCancel}>Hủy</button>
+    </div>
+    <textarea aria-label="Mô tả" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Mô tả (không bắt buộc)" />
+    {error && <div role="alert" className="error-box">{error}</div>}
+  </form>;
 }
 
 function ManagementPanel({ categories, tags, onChanged }: { categories: Category[]; tags: Tag[]; onChanged: () => void }) {
   const [categoryName, setCategoryName] = useState('');
   const [tagName, setTagName] = useState('');
-  async function addCategory() { if (categoryName.trim()) { await api.createCategory({ name: categoryName.trim() }); setCategoryName(''); onChanged(); } }
-  async function addTag() { if (tagName.trim()) { await api.createTag({ name: tagName.trim() }); setTagName(''); onChanged(); } }
-  return <section className="management-panel"><div><h3>Categories</h3><div className="inline-form"><input value={categoryName} onChange={(e) => setCategoryName(e.target.value)} placeholder="Tên category" /><button className="small-button" onClick={() => void addCategory()}>Thêm</button></div><div className="management-list">{categories.map((category) => <span className="category" key={category.id}>{category.name}<button onClick={() => void api.deleteCategory(category.id).then(onChanged)}>×</button></span>)}</div></div><div><h3>Tags</h3><div className="inline-form"><input value={tagName} onChange={(e) => setTagName(e.target.value)} placeholder="Tên tag" /><button className="small-button" onClick={() => void addTag()}>Thêm</button></div><div className="management-list">{tags.map((tag) => <span className="tag" key={tag.id}>#{tag.name}<button onClick={() => void api.deleteTag(tag.id).then(onChanged)}>×</button></span>)}</div></div></section>;
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  async function add(kind: 'category' | 'tag') {
+    const name = (kind === 'category' ? categoryName : tagName).trim();
+    if (!name) return;
+    setBusy(true);
+    try {
+      if (kind === 'category') { await api.createCategory({ name }); setCategoryName(''); }
+      else { await api.createTag({ name }); setTagName(''); }
+      setError(''); onChanged();
+    } catch (err) { setError(err instanceof Error ? err.message : 'Không thể lưu dữ liệu'); }
+    finally { setBusy(false); }
+  }
+  return <section className="management-panel">
+    <div><h3>Danh mục</h3><div className="inline-form"><input aria-label="Tên danh mục mới" maxLength={100} value={categoryName} onChange={(e) => setCategoryName(e.target.value)} placeholder="Tên danh mục" /><button disabled={busy} className="small-button" onClick={() => void add('category')}>Thêm</button></div>
+      <div className="management-list">{categories.map((category) => <MetadataRow key={category.id} name={category.name} maxLength={100} onRename={(name) => api.updateCategory(category.id, { name })} onDelete={() => api.deleteCategory(category.id)} onChanged={onChanged} />)}</div>
+    </div>
+    <div><h3>Nhãn</h3><div className="inline-form"><input aria-label="Tên nhãn mới" maxLength={50} value={tagName} onChange={(e) => setTagName(e.target.value)} placeholder="Tên nhãn" /><button disabled={busy} className="small-button" onClick={() => void add('tag')}>Thêm</button></div>
+      <div className="management-list">{tags.map((tag) => <MetadataRow key={tag.id} name={tag.name} maxLength={50} onRename={(name) => api.updateTag(tag.id, { name })} onDelete={() => api.deleteTag(tag.id)} onChanged={onChanged} />)}</div>
+    </div>
+    {error && <p role="alert" className="error-box">{error}</p>}
+  </section>;
+}
+
+function MetadataRow({ name, maxLength, onRename, onDelete, onChanged }: { name: string; maxLength: number; onRename: (name: string) => Promise<unknown>; onDelete: () => Promise<unknown>; onChanged: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(name);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  async function save(remove = false) {
+    if (!remove && !draft.trim()) { setError('Tên không được để trống.'); return; }
+    setBusy(true);
+    try { if (remove) await onDelete(); else await onRename(draft.trim()); setEditing(false); setError(''); onChanged(); }
+    catch (err) { setError(err instanceof Error ? err.message : 'Không thể lưu dữ liệu'); }
+    finally { setBusy(false); }
+  }
+  return <div className="metadata-row">
+    {editing ? <><input aria-label="Tên mới" maxLength={maxLength} value={draft} onChange={(e) => setDraft(e.target.value)} /><button disabled={busy} onClick={() => void save()}>Lưu</button><button disabled={busy} onClick={() => setEditing(false)}>Hủy</button></> : <><span>{name}</span><button onClick={() => { setDraft(name); setEditing(true); }}>Sửa</button><button disabled={busy} onClick={() => { if (window.confirm('Xóa "' + name + '"?')) void save(true); }}>Xóa</button></>}
+    {error && <p role="alert" className="error-box">{error}</p>}
+  </div>;
 }

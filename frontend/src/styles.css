@@ -540,3 +540,7 @@ body,
             border-radius: 16px;
         }
 }
+
+.metadata-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 0; }
+.metadata-row button { border: 1px solid #d0d5dd; border-radius: 6px; background: white; padding: 4px 8px; cursor: pointer; }
+.metadata-row .error-box { flex-basis: 100%; }

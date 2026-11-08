@@ -1,0 +1,3 @@
+time="2026-11-08T10:40:00+07:00" level=warning msg="Found orphan containers (backend-mongo-1, backend-mailpit-1) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+ Container backend-db-1 Starting 
+ Container backend-db-1 Started 

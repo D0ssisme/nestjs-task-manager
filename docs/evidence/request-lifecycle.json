@@ -1,0 +1,44 @@
+{
+  "success": {
+    "endpoint": "GET /tasks?page=1&limit=2",
+    "status": 200,
+    "stages": [
+      "middleware",
+      "guard",
+      "interceptor.before",
+      "pipe",
+      "handler",
+      "service",
+      "orm.findMany",
+      "interceptor.after"
+    ],
+    "passed": true
+  },
+  "invalidQuery": {
+    "endpoint": "GET /tasks?limit=0",
+    "status": 400,
+    "stages": [
+      "middleware",
+      "guard",
+      "interceptor.before",
+      "pipe",
+      "filter"
+    ],
+    "passed": true
+  },
+  "missingToken": {
+    "endpoint": "GET /tasks",
+    "status": 401,
+    "stages": [
+      "middleware",
+      "guard",
+      "filter"
+    ],
+    "passed": true
+  },
+  "dependencyInjection": {
+    "tasksService": "same instance across two contexts",
+    "prismaService": "same instance across two contexts",
+    "passed": true
+  }
+}

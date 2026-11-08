@@ -1,0 +1,9 @@
+{
+  "endpoint": "POST /tasks",
+  "status": 400,
+  "message": [
+    "property unexpectedField should not exist"
+  ],
+  "serviceCalls": 0,
+  "passed": true
+}

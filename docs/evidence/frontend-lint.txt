@@ -1,0 +1,4 @@
+
+> task-manager-frontend@0.0.1 lint
+> tsc --noEmit
+

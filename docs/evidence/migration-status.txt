@@ -1,0 +1,10 @@
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "taskdb", schema "public" at "localhost:5433"
+
+1 migration found in prisma/migrations
+
+Database schema is up to date!
+◇ injected env (5) from .env
+Loaded Prisma config from prisma.config.ts.
+
+Prisma config detected, skipping environment variable loading.

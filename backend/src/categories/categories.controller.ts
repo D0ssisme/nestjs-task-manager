@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -61,7 +61,7 @@ export class CategoriesController {
   @ApiOkResponse({ description: 'Category details', type: CategoryResponseDto, example: categoryExample })
   @ApiNotFoundResponse({ description: 'Category not found', type: ApiErrorResponseDto })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token', type: ApiErrorResponseDto })
-  findOne(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+  findOne(@CurrentUser() user: JwtPayload, @Param('id', new ParseUUIDPipe()) id: string) {
     return this.categoriesService.findOne(user.sub, id);
   }
 
@@ -73,7 +73,7 @@ export class CategoriesController {
   @ApiNotFoundResponse({ description: 'Category not found', type: ApiErrorResponseDto })
   @ApiConflictResponse({ description: 'Category name already exists', type: ApiErrorResponseDto })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token', type: ApiErrorResponseDto })
-  update(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() dto: UpdateCategoryDto) {
+  update(@CurrentUser() user: JwtPayload, @Param('id', new ParseUUIDPipe()) id: string, @Body() dto: UpdateCategoryDto) {
     return this.categoriesService.update(user.sub, id, dto);
   }
 
@@ -84,7 +84,7 @@ export class CategoriesController {
   @ApiNoContentResponse({ description: 'Category deleted' })
   @ApiNotFoundResponse({ description: 'Category not found', type: ApiErrorResponseDto })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token', type: ApiErrorResponseDto })
-  async remove(@CurrentUser() user: JwtPayload, @Param('id') id: string): Promise<void> {
+  async remove(@CurrentUser() user: JwtPayload, @Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
     await this.categoriesService.remove(user.sub, id);
   }
 }

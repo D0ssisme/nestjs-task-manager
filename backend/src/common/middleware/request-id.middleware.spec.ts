@@ -43,4 +43,11 @@ describe('RequestIdMiddleware', () => {
     );
     expect(next).toHaveBeenCalledOnce();
   });
+
+  it('replaces invalid client request IDs', () => {
+    const request = { header: vi.fn().mockReturnValue('invalid request id') } as never;
+    const response = { setHeader: vi.fn() };
+    new RequestIdMiddleware().use(request, response as never, vi.fn());
+    expect(response.setHeader).toHaveBeenCalledWith('x-request-id', expect.stringMatching(/^[0-9a-f-]{36}$/));
+  });
 });

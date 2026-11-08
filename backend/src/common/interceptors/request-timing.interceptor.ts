@@ -15,68 +15,28 @@ export class RequestTimingInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest<RequestWithId>();
-    if (this.isDocumentationRequest(request.path)) {
-      return next.handle();
-    }
-
     const response = context.switchToHttp().getResponse<Response>();
-    const startedAt = process.hrtime.bigint();
-
+    const startedAt = request.startedAt ?? process.hrtime.bigint();
+    // Errors (including guard failures) are logged once by AllExceptionsFilter.
     return next.handle().pipe(
       tap({
         next: () => {
-          this.logRequest(request, response.statusCode, startedAt);
-        },
-        error: (error: unknown) => {
-          const statusCode = this.getErrorStatusCode(error) ?? response.statusCode;
-          this.logRequest(request, statusCode, startedAt, error);
+          this.logger.log(
+            JSON.stringify({
+              event: 'http_request',
+              method: request.method,
+              path: request.originalUrl ?? request.url,
+              requestId: request.requestId,
+              statusCode: response.statusCode,
+              durationMs: Number(
+                (
+                  Number(process.hrtime.bigint() - startedAt) / 1_000_000
+                ).toFixed(2),
+              ),
+            }),
+          );
         },
       }),
     );
-  }
-
-  private isDocumentationRequest(path: string): boolean {
-    return path === '/docs'
-      || path.startsWith('/docs/')
-      || path === '/api'
-      || path.startsWith('/api/')
-      || path === '/api-json';
-  }
-
-  private logRequest(
-    request: RequestWithId,
-    statusCode: number,
-    startedAt: bigint,
-    error?: unknown,
-  ): void {
-    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
-    const entry = {
-      method: request.method,
-      path: request.originalUrl ?? request.url,
-      requestId: request.requestId,
-      statusCode,
-      durationMs: Number(durationMs.toFixed(2)),
-    };
-    const message = JSON.stringify(entry);
-
-    if (error) {
-      this.logger.error(message);
-      return;
-    }
-
-    this.logger.log(message);
-  }
-
-  private getErrorStatusCode(error: unknown): number | undefined {
-    if (
-      typeof error === 'object'
-      && error !== null
-      && 'getStatus' in error
-      && typeof error.getStatus === 'function'
-    ) {
-      return error.getStatus();
-    }
-
-    return undefined;
   }
 }

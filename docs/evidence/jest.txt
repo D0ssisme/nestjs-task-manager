@@ -1,0 +1,13 @@
+
+> backend@0.0.1 test:unit
+> node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config ./jest.config.cjs --runInBand --json --outputFile=../docs/evidence/jest.json
+
+(node:19636) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+Test Suites: 2 passed, 2 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        3.383 s
+Ran all test suites.
+Test results written to: ..\docs\evidence\jest.json

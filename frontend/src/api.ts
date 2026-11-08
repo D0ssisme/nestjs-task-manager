@@ -38,18 +38,30 @@ export const api = {
     if (params.categoryId) search.set('categoryId', params.categoryId);
     return request<TaskListResponse>(`/tasks?${search}`);
   },
+  overview: async () => {
+    const [all, done, inProgress] = await Promise.all([
+      request<TaskListResponse>('/tasks?limit=1'),
+      request<TaskListResponse>('/tasks?limit=1&status=DONE'),
+      request<TaskListResponse>('/tasks?limit=1&status=IN_PROGRESS'),
+    ]);
+    return { total: all.meta.total, done: done.meta.total, inProgress: inProgress.meta.total };
+  },
   createTask: (body: { title: string; description?: string; status?: TaskStatus; priority?: TaskPriority; categoryId?: string; parentId?: string; dueAt?: string }) =>
     request<Task>('/tasks', { method: 'POST', body: JSON.stringify(body) }),
-  updateTask: (id: string, body: { status?: TaskStatus; title?: string; description?: string; priority?: TaskPriority; categoryId?: string; parentId?: string; dueAt?: string }) =>
+  updateTask: (id: string, body: { status?: TaskStatus; title?: string; description?: string; priority?: TaskPriority; categoryId?: string | null; parentId?: string | null; dueAt?: string | null }) =>
     request<Task>(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   deleteTask: (id: string) => request<void>(`/tasks/${id}`, { method: 'DELETE' }),
   listCategories: () => request<Category[]>('/categories'),
   createCategory: (body: { name: string; colorHex?: string; icon?: string }) =>
     request<Category>('/categories', { method: 'POST', body: JSON.stringify(body) }),
+  updateCategory: (id: string, body: { name: string }) =>
+    request<Category>(`/categories/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   deleteCategory: (id: string) => request<void>(`/categories/${id}`, { method: 'DELETE' }),
   listTags: () => request<Tag[]>('/tags'),
   createTag: (body: { name: string; colorHex?: string }) =>
     request<Tag>('/tags', { method: 'POST', body: JSON.stringify(body) }),
+  updateTag: (id: string, body: { name: string }) =>
+    request<Tag>(`/tags/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   deleteTag: (id: string) => request<void>(`/tags/${id}`, { method: 'DELETE' }),
   attachTag: (taskId: string, tagId: string) =>
     request<Task>(`/tasks/${taskId}/tags`, { method: 'POST', body: JSON.stringify({ tagId }) }),

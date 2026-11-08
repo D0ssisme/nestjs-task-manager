@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface.js';
+import { ReminderResponseDto } from './dto/reminder-response.dto.js';
 import { RemindersService } from './reminders.service.js';
 
 @Controller('reminders')
@@ -14,7 +15,7 @@ export class RemindersController {
 
   @Get()
   @ApiOperation({ summary: 'List overdue and upcoming task notifications' })
-  @ApiResponse({ status: 200, description: 'Notifications for tasks due within the next 24 hours' })
+  @ApiResponse({ status: 200, description: 'Overdue tasks and tasks due within 24 hours, excluding completed and archived tasks', type: [ReminderResponseDto] })
   findForUser(@CurrentUser() user: JwtPayload) {
     return this.remindersService.findForUser(user.sub);
   }

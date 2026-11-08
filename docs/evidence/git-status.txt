@@ -1,0 +1,48 @@
+ M .github/workflows/ci.yml
+ M .gitignore
+ M README.md
+ M backend/.env.example
+ M backend/README.md
+ M backend/docker-compose.yml
+ M backend/package-lock.json
+ M backend/package.json
+ M backend/prisma.config.ts
+ M backend/prisma/schema.prisma
+ M backend/src/app.module.ts
+ M backend/src/categories/categories.controller.ts
+ M backend/src/common/dto/api-error.dto.ts
+ M backend/src/common/filters/all-exceptions.filter.ts
+ M backend/src/common/interceptors/request-timing.interceptor.ts
+ M backend/src/common/middleware/request-id.middleware.spec.ts
+ M backend/src/common/middleware/request-id.middleware.ts
+ M backend/src/config/env.validation.ts
+ D backend/src/mail/mail.module.ts
+ D backend/src/mail/mail.service.ts
+ M backend/src/main.ts
+ M backend/src/reminders/reminders.controller.ts
+ M backend/src/tags/tags.controller.ts
+ M backend/src/tasks/dto/task.dto.ts
+ M backend/src/tasks/tasks.controller.ts
+ M backend/src/tasks/tasks.service.ts
+ M backend/src/users/users.service.ts
+ M backend/test/app.e2e-spec.ts
+ M backend/vitest.config.ts
+ D frontend/dist/assets/index-BmO-Lv49.css
+ D frontend/dist/assets/index-CNPsIn6N.js
+ D frontend/dist/favicon.svg
+ D frontend/dist/icons.svg
+ M frontend/dist/index.html
+ M frontend/node_modules/.tmp/tsconfig.app.tsbuildinfo
+ M frontend/node_modules/.tmp/tsconfig.node.tsbuildinfo
+ M frontend/src/App.tsx
+ M frontend/src/api.ts
+ M frontend/src/styles.css
+ M frontend/vite.config.js
+?? backend/HANDS-ON-LAB.md
+?? backend/src/config/env.validation.spec.ts
+?? backend/src/configure-app.ts
+?? backend/src/reminders/dto/
+?? backend/test/evidence.ts
+?? backend/test/request-lifecycle.e2e-spec.ts
+?? docs/
+?? scripts/

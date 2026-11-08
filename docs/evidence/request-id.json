@@ -1,0 +1,62 @@
+{
+  "successHeader": "e2e-success",
+  "deniedHeader": "e2e-denied",
+  "deniedBody": {
+    "statusCode": 401,
+    "timestamp": "2026-11-08T03:40:32.381Z",
+    "path": "/tasks",
+    "message": "Unauthorized",
+    "requestId": "e2e-denied"
+  },
+  "invalidBody": {
+    "statusCode": 400,
+    "timestamp": "2026-11-08T03:40:32.385Z",
+    "path": "/tasks/not-a-uuid",
+    "message": "Validation failed (uuid is expected)",
+    "error": "Bad Request",
+    "requestId": "e2e-invalid"
+  },
+  "successLogs": [
+    {
+      "event": "http_request",
+      "method": "GET",
+      "path": "/tasks",
+      "requestId": "e2e-success",
+      "statusCode": 200,
+      "durationMs": 6.08
+    }
+  ],
+  "errorLogs": [
+    {
+      "event": "http_request",
+      "durationMs": 0.2,
+      "requestId": "e2e-denied",
+      "method": "GET",
+      "path": "/tasks",
+      "statusCode": 401,
+      "errorType": "UnauthorizedException",
+      "message": "Unauthorized"
+    },
+    {
+      "event": "http_request",
+      "durationMs": 0.55,
+      "requestId": "e2e-invalid",
+      "method": "GET",
+      "path": "/tasks/not-a-uuid",
+      "statusCode": 400,
+      "errorType": "BadRequestException",
+      "message": "Validation failed (uuid is expected)"
+    },
+    {
+      "event": "http_request",
+      "durationMs": 0.17,
+      "requestId": "bb58cb11-bf35-4e89-ac57-538a02bdf858",
+      "method": "GET",
+      "path": "/tasks",
+      "statusCode": 401,
+      "errorType": "UnauthorizedException",
+      "message": "Unauthorized"
+    }
+  ],
+  "passed": true
+}

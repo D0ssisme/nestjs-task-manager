@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -82,7 +82,7 @@ export class TasksController {
   @ApiOkResponse({ description: 'Task details', type: TaskResponseDto, example: taskExample })
   @ApiNotFoundResponse({ description: 'Task not found or not owned by current user', type: ApiErrorResponseDto })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token', type: ApiErrorResponseDto })
-  findOne(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+  findOne(@CurrentUser() user: JwtPayload, @Param('id', new ParseUUIDPipe()) id: string) {
     return this.tasksService.findOne(user.sub, id);
   }
 
@@ -93,7 +93,7 @@ export class TasksController {
   @ApiBadRequestResponse({ description: 'Invalid task data or relation ownership', type: ApiErrorResponseDto })
   @ApiNotFoundResponse({ description: 'Task not found', type: ApiErrorResponseDto })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token', type: ApiErrorResponseDto })
-  update(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() dto: UpdateTaskDto) {
+  update(@CurrentUser() user: JwtPayload, @Param('id', new ParseUUIDPipe()) id: string, @Body() dto: UpdateTaskDto) {
     return this.tasksService.update(user.sub, id, dto);
   }
 
@@ -105,7 +105,7 @@ export class TasksController {
   @ApiConflictResponse({ description: 'Tag is already attached', type: ApiErrorResponseDto })
   @ApiNotFoundResponse({ description: 'Task not found', type: ApiErrorResponseDto })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token', type: ApiErrorResponseDto })
-  attachTag(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() dto: AttachTagDto) {
+  attachTag(@CurrentUser() user: JwtPayload, @Param('id', new ParseUUIDPipe()) id: string, @Body() dto: AttachTagDto) {
     return this.tasksService.attachTag(user.sub, id, dto.tagId);
   }
 
@@ -117,7 +117,7 @@ export class TasksController {
   @ApiNoContentResponse({ description: 'Tag detached' })
   @ApiNotFoundResponse({ description: 'Task or tag relation not found', type: ApiErrorResponseDto })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token', type: ApiErrorResponseDto })
-  async detachTag(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Param('tagId') tagId: string): Promise<void> {
+  async detachTag(@CurrentUser() user: JwtPayload, @Param('id', new ParseUUIDPipe()) id: string, @Param('tagId', new ParseUUIDPipe()) tagId: string): Promise<void> {
     await this.tasksService.detachTag(user.sub, id, tagId);
   }
 
@@ -128,7 +128,7 @@ export class TasksController {
   @ApiNoContentResponse({ description: 'Task deleted' })
   @ApiNotFoundResponse({ description: 'Task not found', type: ApiErrorResponseDto })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token', type: ApiErrorResponseDto })
-  async remove(@CurrentUser() user: JwtPayload, @Param('id') id: string): Promise<void> {
+  async remove(@CurrentUser() user: JwtPayload, @Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
     await this.tasksService.remove(user.sub, id);
   }
 }

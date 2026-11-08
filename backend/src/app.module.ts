@@ -10,7 +10,6 @@ import { TasksModule } from './tasks/tasks.module.js';
 import { CategoriesModule } from './categories/categories.module.js';
 import { TagsModule } from './tags/tags.module.js';
 import { RemindersModule } from './reminders/reminders.module.js';
-import { MailModule } from './mail/mail.module.js';
 import { HealthModule } from './health/health.module.js';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware.js';
 
@@ -20,7 +19,7 @@ import { RequestIdMiddleware } from './common/middleware/request-id.middleware.j
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
     PrismaModule, AuthModule, UsersModule, TasksModule,
-    CategoriesModule, TagsModule, RemindersModule, MailModule, HealthModule,
+    CategoriesModule, TagsModule, RemindersModule, HealthModule,
   ],
 })
 export class AppModule implements NestModule {

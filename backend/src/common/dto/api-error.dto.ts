@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class ApiErrorResponseDto {
   @ApiProperty({ example: 400 })
@@ -7,11 +7,23 @@ export class ApiErrorResponseDto {
   @ApiProperty({
     oneOf: [
       { type: 'string', example: 'Task not found' },
-      { type: 'array', items: { type: 'string' }, example: ['title must be a string'] },
+      {
+        type: 'array',
+        items: { type: 'string' },
+        example: ['title must be a string'],
+      },
     ],
   })
   message!: string | string[];
 
-  @ApiProperty({ example: 'Bad Request' })
-  error!: string;
+  @ApiPropertyOptional({ example: 'Bad Request' })
+  error?: string;
+  @ApiProperty({ example: 'client-request-123' })
+  requestId!: string;
+
+  @ApiProperty({ type: String, format: 'date-time' })
+  timestamp!: string;
+
+  @ApiProperty({ example: '/tasks' })
+  path!: string;
 }

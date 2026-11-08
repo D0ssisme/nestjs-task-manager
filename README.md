@@ -34,7 +34,6 @@
 
 - Docker Compose.
 - GitHub Actions CI cho backend.
-- Mailpit chỉ được cấu hình như dependency SMTP local; thông báo hiện tại của ứng dụng là in-app trên frontend.
 
 ## Cấu trúc
 
@@ -49,7 +48,6 @@ nestjs-task-manager/
 │   │   ├── categories/
 │   │   ├── common/
 │   │   ├── health/
-│   │   ├── mail/
 │   │   ├── reminders/
 │   │   ├── tags/
 │   │   ├── tasks/
@@ -74,17 +72,10 @@ nestjs-task-manager/
 Tạo file `backend/.env` từ `backend/.env.example`:
 
 ```env
-DATABASE_URL="postgresql://app:app@localhost:5432/taskdb?schema=public"
+DATABASE_URL="postgresql://app:app@localhost:5433/taskdb?schema=public"
 JWT_SECRET=change-me-to-a-secret-with-at-least-8-characters
 JWT_EXPIRES_IN=15m
 PORT=3001
-
-MAIL_PROVIDER=smtp
-SMTP_HOST=localhost
-SMTP_PORT=1025
-SMTP_USER=
-SMTP_PASS=
-MAIL_FROM="Task App <no-reply@taskapp.local>"
 ```
 
 `JWT_SECRET` phải có ít nhất 8 ký tự. Không commit `backend/.env`.
@@ -101,7 +92,7 @@ Sau khi thay đổi biến `VITE_*`, cần khởi động lại Vite.
 
 ## Chạy local
 
-### 1. Khởi động PostgreSQL và Mailpit
+### 1. Khởi động PostgreSQL
 
 ```powershell
 cd C:\nestjs-task-manager\backend
@@ -109,10 +100,7 @@ docker compose up -d
 docker compose ps
 ```
 
-PostgreSQL chạy ở `localhost:5432`. Mailpit có:
-
-- SMTP: `localhost:1025`
-- Web UI: `http://localhost:8025`
+PostgreSQL chạy ở `localhost:5433`.
 
 ### 2. Cài backend và đồng bộ database
 
@@ -275,18 +263,22 @@ Project hiện có:
 
 ## Kiểm thử và chất lượng code
 
+Xem [bảng phủ 19 mục và minh chứng thực tế](docs/technical-coverage.md). Kết quả kiểm tra trước đó nằm ở [bản ghi ngày 06/11](docs/verification.md).
+
 Chạy từ `backend`:
 
 ```powershell
 npm run lint
 npm run build
+npm test
 npm run test:unit
 npm run test:e2e
 ```
 
 Các loại test:
 
-- Jest: provider unit test.
+- Jest: provider unit test (`*.unit.spec.ts`).
+- Vitest: controller và middleware test (`*.spec.ts`, loại trừ test Jest).
 - Vitest + Supertest: HTTP e2e test.
 - E2E kiểm tra validation `400`, login sai `401`, thiếu token `401`, ownership, resource không tồn tại `404`, dữ liệu trùng `409`, task/tag và reminder flow.
 
@@ -308,11 +300,11 @@ CI hiện chạy:
 2. `npm ci` trong `backend`.
 3. Prisma generate và migration.
 4. Backend lint.
-5. Jest unit test.
+5. Vitest và Jest unit test.
 6. Supertest e2e test.
 7. Backend build.
 
-Frontend hiện chưa có job riêng trong workflow CI.
+Frontend có job riêng chạy `npm ci`, build và kiểm tra TypeScript.
 
 ## Dừng môi trường local
 
@@ -328,3 +320,4 @@ docker compose down -v
 ```
 
 Chỉ dùng `-v` khi muốn reset database.
+400 Bad Request
