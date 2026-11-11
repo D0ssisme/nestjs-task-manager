@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { Prisma, TaskStatus } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { CreateTaskDto, ListTasksQueryDto, SortOrder, TaskSortBy, UpdateTaskDto } from './dto/task.dto.js';
+import { CreateTaskDto, ListTasksQueryDto, SearchTasksQueryDto, SortOrder, TaskSortBy, UpdateTaskDto } from './dto/task.dto.js';
 
 @Injectable()
 export class TasksService {
@@ -132,5 +132,20 @@ export class TasksService {
   private async ensureTagOwnership(userId: string, tagId: string) {
     const tag = await this.prisma.tag.findFirst({ where: { id: tagId, userId } });
     if (!tag) throw new BadRequestException('Tag does not belong to the current user');
+  }
+
+  async search(userId: string, query: SearchTasksQueryDto) {
+    const data = await this.prisma.task.findMany({
+      where: {
+        userId,
+        OR: [
+          { title: { contains: query.keyword, mode: 'insensitive' } },
+          { description: { contains: query.keyword, mode: 'insensitive' } },
+        ],
+      },
+      include: { category: true, taskTags: { include: { tag: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+    return { data, meta: { keyword: query.keyword, total: data.length } };
   }
 }

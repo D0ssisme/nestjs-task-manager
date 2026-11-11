@@ -13,7 +13,13 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { AttachTagDto, CreateTaskDto, ListTasksQueryDto, UpdateTaskDto } from './dto/task.dto.js';
+import {
+  AttachTagDto,
+  CreateTaskDto,
+  ListTasksQueryDto,
+  SearchTasksQueryDto,
+  UpdateTaskDto,
+} from './dto/task.dto.js';
 import { TaskListResponseDto, TaskResponseDto } from './dto/task-response.dto.js';
 import { TasksService } from './tasks.service.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
@@ -74,6 +80,16 @@ export class TasksController {
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token', type: ApiErrorResponseDto })
   findAll(@CurrentUser() user: JwtPayload, @Query() query: ListTasksQueryDto) {
     return this.tasksService.findAll(user.sub, query);
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: 'Search tasks by keyword in title or description' })
+  @ApiQuery({ name: 'keyword', required: true, type: String, example: 'presentation' })
+  @ApiOkResponse({ description: 'List of tasks matching the keyword', type: TaskListResponseDto })
+  @ApiBadRequestResponse({ description: 'Invalid query parameter', type: ApiErrorResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token', type: ApiErrorResponseDto })
+  search(@CurrentUser() user: JwtPayload, @Query() query: SearchTasksQueryDto) {
+    return this.tasksService.search(user.sub, query);
   }
 
   @Get(':id')

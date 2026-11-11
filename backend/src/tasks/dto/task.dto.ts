@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { TaskPriority, TaskStatus } from '@prisma/client';
 import { IsDate, IsEnum, IsInt, IsOptional, IsString, IsUUID, MaxLength, Max, Min, MinLength, ValidateIf } from 'class-validator';
@@ -132,6 +132,14 @@ export class ListTasksQueryDto {
   @IsOptional()
   @IsEnum(SortOrder)
   order: SortOrder = SortOrder.DESC;
+}
+
+export class SearchTasksQueryDto {
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @MinLength(2)
+  @MaxLength(100)
+  keyword!: string;
 }
 
 export class AttachTagDto {
